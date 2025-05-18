@@ -1,6 +1,8 @@
-baseURL = 'https://example.org/'
-languageCode = 'pt-br'
-title = 'My New Hugo Site'
+baseURL = 'https://dneto.me/'
+defaultContentLanguage = 'pt'
+languageCode = 'pt-BR'
+title = 'dneto.me'
+summaryLength = 150
 
 [markup]
 [markup.highlight]

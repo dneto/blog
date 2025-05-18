@@ -41,7 +41,10 @@ demorar.
 
 ## Interropendo fluxos
 
-Imagine uma operação longa sendo realizada. Pode ser o download de um arquivo grande, uma requisição para uma API REST, uma consulta ao banco de dados ou a execução de tarefa que vai demorar muito tempo. Como você faria pra cancelar algo, se fosse necessário?
+Imagine uma operação longa sendo realizada. Pode ser o download de um arquivo
+grande, uma requisição para uma API REST, uma consulta ao banco de dados ou a
+execução de tarefa que vai demorar muito tempo. Como você faria pra cancelar
+algo, se fosse necessário?
 
 Em outras linguagens, cada biblioteca ou framework oferece sua solução para
 lidar com seus respectivos ciclos de vida. Os desenvolvedores do Go enxergaram a
@@ -50,16 +53,21 @@ biblioteca padrão do Go. Convenientemente, esse padrão não só é útil para
 requisições web, mas para qualquer tipo de tarefa que possa ser cancelada,
 fazendo com que esse padrão seja amplamente utilizado nessa linguagem.
 
-Com esse padrão é possível sinalizar que um fluxo deve ser interrompido,
-possibilitando o encerramento do fluxo de forma _graciosa_ (_gracious
-shutdown_).
+Já entendemos que existem situações que precisamos de um controle mais fino
+sobre o ciclo de vida de um fluxo. Mas como fazer isso em Go?
+O artigo [Go Concurrency Patterns: Pipelines and Cancelation](https://go.dev/blog/pipelines)
+já mostra uma forma de cancelar um processamento em _goroutines_ usando canais
+no estilo `done := make(chan struct{})`. "Outro" (vamos ver mais tarde o porque
+dessas aspas) padrão nos é apresentada em outro artigo: [Go Concurrency Patterns:Context](https://go.dev/blog/context),
+que nos apresenta o pacote [`context`](https://pkg.go.dev/context) que, olha só,
+estamos falando nesse post.
+
+Com esses padrões é possível sinalizar que um fluxo deve ser interrompido,
+possibilitando o encerramento de forma _graciosa_ (_gracious shutdown_).
 
 ## A interface context.Context
 
-Já entendemos que existem situações que precisamos de um controle mais fino
-sobre o ciclo de vida de um fluxo. Mas como fazer isso em Go?
-
-O artigo [Go Concurrency Patterns: Context](https://go.dev/blog/context) nos apresenta o pacote [`context`](https://pkg.go.dev/context) e se formos dar uma olhada na documentação da interface [`context.Context`](https://pkg.go.dev/context#Context), veremos:
+Vamos dar uma olhada na documentação da interface [`context.Context`](https://pkg.go.dev/context#Context):
 
 > _A Context carries a deadline, a cancellation signal, and other values across API boundaries._\
 > _Context's methods may be called by multiple goroutines simultaneously._
@@ -81,9 +89,13 @@ outros downloads iniciados pela mesma tarefa, seria uma tragédia 😟.
 Então, caso você deseje ter um controle fino sobre o ciclo de vida de um
 determinado fluxo da sua aplicação, a recomendação é criar uma nova instância do
 `context.Context`, o pacote `context` já oferece algumas formas para criar
-contextos. Vamos dar uma olhada nelas agora?
+contextos. Vamos dar uma olhada nelas?
 
 ## Criando novos contextos
+
+Atualmente, existem três formas de criar um novo contexto utilizando o pacote
+`context`, além da possibilidade de criar seu próprio contexto implementando a
+interface `context.Context`.
 
 ### Com cancelamento
 
@@ -122,8 +134,8 @@ o abuso dessa opção pode causar problemas de clareza no código.
 
 Por se tratar de uma interface, você pode criar sua própria implementação.
 Pessoalmente não recomendo seguir por esse caminho, pois nesses meus quase 10
-anos de go eu ainda não vi nenhum cenário que as interfaces fornecidas pela
-biblioteca padrão não resolvessem.
+anos de Go eu ainda não vi nenhum cenário que as interfaces fornecidas pela
+biblioteca padrão não foram suficientes.
 
 ## Lidando com o cancelamento
 
@@ -178,7 +190,7 @@ func longProcess(ctx context.Context) error {
 }
 ```
 
-#### Usando o AfterFunc
+### Usando o context.AfterFunc
 
 ```go
 func longProcess(ctx context.Context) error {
@@ -195,9 +207,11 @@ func longProcess(ctx context.Context) error {
 
 ## Referências e material adicional
 
+- [Go Concurrency Patterns: Pipelines and Cancelation](https://go.dev/blog/pipelines)
 - [Go Concurrency Patterns: Context](https://go.dev/blog/context)
 - [Context and Struct](https://go.dev/blog/context-and-structs)
 - [Learn Go with tests: Contexts](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/context)
+- [The Complete Guide to Context in Golang: Efficient Concurrency Management](https://medium.com/@jamal.kaksouri/the-complete-guide-to-context-in-golang-efficient-concurrency-management-43d722f6eaea)
 - [Graceful Shutdown in Go: Practical Patterns](https://victoriametrics.com/blog/go-graceful-shutdown/index.html)
 
 Espero que tenha ajudado você e até uma próxima 👋.

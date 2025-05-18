@@ -3,10 +3,9 @@
 
 <head>
     <meta charset="utf-8">
-    <title>{{ block "title" . }}
-        <!-- Blocks may include default content. -->
-        {{ .Site.Title }}
-        {{ end }}
+    <title>
+Test - dneto.me
+
     </title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,13 +18,32 @@
 
 <body>
     <div id="main">
-        <!-- Code that all your templates share, like a header -->
-        {{ block "main" . }}
-        <!-- The part of the page that begins to differ between templates -->
-        {{ end }}
-        {{ block "footer" . }}
-        <!-- More shared code, perhaps a footer but that can be overridden if need be in  -->
-        {{ end }}
+        
+        
+<div id="content">
+  <div>
+    <div id="title">
+    <a href="/posts/test/">
+        <h1>Test</h1>
+    </a>
+    <div id="tags">
+        <span class="tag">18 de maio de 2025</span>·
+        <span class="tag">0 minutos</span>·
+        <span class="tag">0 palavras</span>
+    </div>
+</div>
+    <div id="toc-in-content">
+      <nav id="TableOfContents"></nav>
+    </div>
+    <div id="post">
+      
+    </div>
+  </div>
+</div>
+
+        
+        
+        
     </div>
     <nav id="menu">
         <div id="links">

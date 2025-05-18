@@ -1,0 +1,24 @@
+{{ define "title" }}
+{{ .Title }} - {{ .Site.Title }}
+{{ end }}
+{{ define "main" }}
+<div id="posts">
+    <ul>
+        {{ range site.RegularPages }}
+        <li>
+            <div>
+                <a href="{{.RelPermalink}}">
+                    <h1>{{ .LinkTitle }}</h1>
+                </a>
+            </div>
+            <div id="tags">
+                <span class="tag">{{ time.Format "02 de January de 2006" .Date}}</span>·
+                <span class="tag">{{ .ReadingTime }} minutos</span>·
+                <span class="tag">{{ .WordCount }} palavras</span>{{ range .Params.Tags }}· <span class="tag">#{{ .
+                    }}</span>{{end }}
+            </div>
+        </li>
+        {{ end }}
+    </ul>
+</div>
+{{ end }}

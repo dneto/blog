@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>
-Desmistificando contextos no Go - My New Hugo Site
+Desmistificando contextos no Go - dneto.me
 
     </title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,32 +17,21 @@ Desmistificando contextos no Go - My New Hugo Site
 </head>
 
 <body>
-    <nav id="top">
-        <ul>
-            <li><a href="https://example.org/">Início</a></li>
-            <li><a href="/posts">Publicações</a></li>
-        </ul>
-    </nav>
     <div id="main">
         
         
 <div id="content">
   <div>
     <div id="title">
-      <div id="tags">
-        <span class="tag">#Go</span><span class="tag">#Programação</span>
-      </div>
-      <h1>Desmistificando contextos no Go</h1>
-      <div id="about">
-        <p>
-          <span>Por </span>
-          <img class="avatar" src="/images/avatar.png" />
-          <span class="author">Demétrio Neto</span>
-          <span>em </span>
-          <span class="date">16/05/2025</span>
-        </p>
-      </div>
+    <a href="/posts/2025-05-17-go-contexts/">
+        <h1>Desmistificando contextos no Go</h1>
+    </a>
+    <div id="tags">
+        <span class="tag">16 de maio de 2025</span>·
+        <span class="tag">6 minutos</span>·
+        <span class="tag">1159 palavras</span>· <span class="tag">#Go</span>· <span class="tag">#Programação</span>
     </div>
+</div>
     <div id="toc-in-content">
       <nav id="TableOfContents">
   <ul>
@@ -61,6 +50,7 @@ Desmistificando contextos no Go - My New Hugo Site
       <ul>
         <li><a href="#verificando-o-contexterr">Verificando o context.Err()</a></li>
         <li><a href="#escutando-o-ctxdone">Escutando o ctx.Done()</a></li>
+        <li><a href="#usando-o-contextafterfunc">Usando o context.AfterFunc</a></li>
       </ul>
     </li>
     <li><a href="#referências-e-material-adicional">Referências e material adicional</a></li>
@@ -92,20 +82,28 @@ de uso reais.</p>
 é importante que eles sejam passados ou repassados entre chamadas que podem
 demorar.</p>
 <h2 id="interropendo-fluxos">Interropendo fluxos</h2>
-<p>Imagine uma operação longa sendo realizada. Pode ser o download de um arquivo grande, uma requisição para uma API REST, uma consulta ao banco de dados ou a execução de tarefa que vai demorar muito tempo. Como você faria pra cancelar algo, se fosse necessário?</p>
+<p>Imagine uma operação longa sendo realizada. Pode ser o download de um arquivo
+grande, uma requisição para uma API REST, uma consulta ao banco de dados ou a
+execução de tarefa que vai demorar muito tempo. Como você faria pra cancelar
+algo, se fosse necessário?</p>
 <p>Em outras linguagens, cada biblioteca ou framework oferece sua solução para
 lidar com seus respectivos ciclos de vida. Os desenvolvedores do Go enxergaram a
 necessidade de gerenciar o e resolveram implementaram o pacote <code>context</code> na
 biblioteca padrão do Go. Convenientemente, esse padrão não só é útil para
 requisições web, mas para qualquer tipo de tarefa que possa ser cancelada,
 fazendo com que esse padrão seja amplamente utilizado nessa linguagem.</p>
-<p>Com esse padrão é possível sinalizar que um fluxo deve ser interrompido,
-possibilitando o encerramento do fluxo de forma <em>graciosa</em> (<em>gracious
-shutdown</em>).</p>
-<h2 id="a-interface-contextcontext">A interface context.Context</h2>
 <p>Já entendemos que existem situações que precisamos de um controle mais fino
-sobre o ciclo de vida de um fluxo. Mas como fazer isso em Go?</p>
-<p>O artigo <a href="https://go.dev/blog/context">Go Concurrency Patterns: Context</a> nos apresenta o pacote <a href="https://pkg.go.dev/context"><code>context</code></a> e se formos dar uma olhada na documentação da interface <a href="https://pkg.go.dev/context#Context"><code>context.Context</code></a>, veremos:</p>
+sobre o ciclo de vida de um fluxo. Mas como fazer isso em Go?
+O artigo <a href="https://go.dev/blog/pipelines">Go Concurrency Patterns: Pipelines and Cancelation</a>
+já mostra uma forma de cancelar um processamento em <em>goroutines</em> usando canais
+no estilo <code>done := make(chan struct{})</code>. &ldquo;Outro&rdquo; (vamos ver mais tarde o porque
+dessas aspas) padrão nos é apresentada em outro artigo: <a href="https://go.dev/blog/context">Go Concurrency Patterns:Context</a>,
+que nos apresenta o pacote <a href="https://pkg.go.dev/context"><code>context</code></a> que, olha só,
+estamos falando nesse post.</p>
+<p>Com esses padrões é possível sinalizar que um fluxo deve ser interrompido,
+possibilitando o encerramento de forma <em>graciosa</em> (<em>gracious shutdown</em>).</p>
+<h2 id="a-interface-contextcontext">A interface context.Context</h2>
+<p>Vamos dar uma olhada na documentação da interface <a href="https://pkg.go.dev/context#Context"><code>context.Context</code></a>:</p>
 <blockquote>
 <p><em>A Context carries a deadline, a cancellation signal, and other values across API boundaries.</em><br>
 <em>Context&rsquo;s methods may be called by multiple goroutines simultaneously.</em></p></blockquote>
@@ -124,8 +122,11 @@ outros downloads iniciados pela mesma tarefa, seria uma tragédia 😟.</p>
 <p>Então, caso você deseje ter um controle fino sobre o ciclo de vida de um
 determinado fluxo da sua aplicação, a recomendação é criar uma nova instância do
 <code>context.Context</code>, o pacote <code>context</code> já oferece algumas formas para criar
-contextos. Vamos dar uma olhada nelas agora?</p>
+contextos. Vamos dar uma olhada nelas?</p>
 <h2 id="criando-novos-contextos">Criando novos contextos</h2>
+<p>Atualmente, existem três formas de criar um novo contexto utilizando o pacote
+<code>context</code>, além da possibilidade de criar seu próprio contexto implementando a
+interface <code>context.Context</code>.</p>
 <h3 id="com-cancelamento">Com cancelamento</h3>
 <p>A função <code>context.WithCancel</code> possui dois retornos. O primeiro é o próprio
 contexto, que deve ser repassado nas chamadas em que ele se faz necessário, já o
@@ -152,8 +153,8 @@ o abuso dessa opção pode causar problemas de clareza no código.</p>
 <h3 id="crie-o-seu-próprio">Crie o seu próprio</h3>
 <p>Por se tratar de uma interface, você pode criar sua própria implementação.
 Pessoalmente não recomendo seguir por esse caminho, pois nesses meus quase 10
-anos de go eu ainda não vi nenhum cenário que as interfaces fornecidas pela
-biblioteca padrão não resolvessem.</p>
+anos de Go eu ainda não vi nenhum cenário que as interfaces fornecidas pela
+biblioteca padrão não foram suficientes.</p>
 <h2 id="lidando-com-o-cancelamento">Lidando com o cancelamento</h2>
 <p><em>Não, não estamos falando de redes sociais</em> 🫠</p>
 <p>A biblioteca padrão oferece três formas de tratar contextos cancelados:</p>
@@ -195,7 +196,7 @@ determinado contexto deve ser interrompido.</p>
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><h4 id="usando-o-afterfunc">Usando o AfterFunc</h4>
+</span></span></code></pre></div><h3 id="usando-o-contextafterfunc">Usando o context.AfterFunc</h3>
 <div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">longProcess</span>(ctx context.Context) <span style="color:#f38ba8">error</span> {
 </span></span><span style="display:flex;"><span>    stop <span style="color:#89dceb;font-weight:bold">:=</span> context.<span style="color:#89b4fa">AfterFunc</span>(ctx, <span style="color:#f38ba8">func</span>(){
 </span></span><span style="display:flex;"><span>        <span style="color:#6c7086;font-style:italic">// quando o contexto for cancelado, esse código será executado</span>
@@ -208,9 +209,11 @@ determinado contexto deve ser interrompido.</p>
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><h2 id="referências-e-material-adicional">Referências e material adicional</h2>
 <ul>
+<li><a href="https://go.dev/blog/pipelines">Go Concurrency Patterns: Pipelines and Cancelation</a></li>
 <li><a href="https://go.dev/blog/context">Go Concurrency Patterns: Context</a></li>
 <li><a href="https://go.dev/blog/context-and-structs">Context and Struct</a></li>
 <li><a href="https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/context">Learn Go with tests: Contexts</a></li>
+<li><a href="https://medium.com/@jamal.kaksouri/the-complete-guide-to-context-in-golang-efficient-concurrency-management-43d722f6eaea">The Complete Guide to Context in Golang: Efficient Concurrency Management</a></li>
 <li><a href="https://victoriametrics.com/blog/go-graceful-shutdown/index.html">Graceful Shutdown in Go: Practical Patterns</a></li>
 </ul>
 <p>Espero que tenha ajudado você e até uma próxima 👋.</p>
@@ -218,35 +221,30 @@ determinado contexto deve ser interrompido.</p>
     </div>
   </div>
 </div>
-<div id="sidenav">
-  <nav id="TableOfContents">
-  <ul>
-    <li><a href="#introdução">Introdução</a></li>
-    <li><a href="#interropendo-fluxos">Interropendo fluxos</a></li>
-    <li><a href="#a-interface-contextcontext">A interface context.Context</a></li>
-    <li><a href="#criando-novos-contextos">Criando novos contextos</a>
-      <ul>
-        <li><a href="#com-cancelamento">Com cancelamento</a></li>
-        <li><a href="#com-deadline-e-timeout">Com deadline e timeout</a></li>
-        <li><a href="#com-valores">Com valores</a></li>
-        <li><a href="#crie-o-seu-próprio">Crie o seu próprio</a></li>
-      </ul>
-    </li>
-    <li><a href="#lidando-com-o-cancelamento">Lidando com o cancelamento</a>
-      <ul>
-        <li><a href="#verificando-o-contexterr">Verificando o context.Err()</a></li>
-        <li><a href="#escutando-o-ctxdone">Escutando o ctx.Done()</a></li>
-      </ul>
-    </li>
-    <li><a href="#referências-e-material-adicional">Referências e material adicional</a></li>
-  </ul>
-</nav>
-</div>
 
         
         
         
     </div>
+    <nav id="menu">
+        <div id="links">
+            <ul>
+                <li><a href="/">Início</a></li>
+                <li><a href="/posts/">Publicações</a></li>
+                <li><a href="/about/">Sobre</a></li>
+                <li><a href="/tags/">Tags</a></li>
+            </ul>
+        </div>
+        <div id="avatar">
+            <img src="/images/avatar.png" alt="Demétrio Neto" />
+        </div>
+        <h1 class="name">Demétrio Neto</h1>
+        <p>
+            Ola 👋! Eu sou o Demétrio, alguns me chamam de <em>Demi</em>.
+            Nesse espaço vou compartilhar algumas coisas que acho interessante.
+        </p>
+        <div style="flex-grow:1;min-width:0;"></div>
+    </nav>
 </body>
 
 </html>
