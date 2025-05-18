@@ -6,30 +6,22 @@
 }
 
 
-@media screen and (max-width: 1280px) {
-  .hide-on-mobile {
-    display: none !important;
-  }
-}
-
-@media screen and (min-width: 1280px) {
-  .hide-on-desktop {
-    display: none !important;
-  }
-}
 
 :root {
   color-scheme: light dark;
   --text-font: "Arvo", serif;
   --text-font-weight: light-dark(250, 300);
+  --text-font-size: 1.2rem;
+  --text-line-height: 1.5rem;
 
   --heading-font-family: "Titan One", serif;
   --heading-font-weight: 400;
+  --heading-font-size: 3.5rem;
 
   --code-font: "Commit Mono", monospace;
 
   --tags-font-family: "Arvo", sans-serif;
-  --tags-font-size: 0.85rem;
+  --tags-font-size: 1rem;
   --tag-color: light-dark(#acb0be, #585b70);
 
   --top-font-family: "Arvo", sans-serif;
@@ -50,6 +42,7 @@
   --menu-background-color: light-dark(#e6e9ef, #1e1e2e);
   --divison-background-color: light-dark(#ccd0da, #a6adc8);
 }
+
 
 
 div#toc-in-content {
@@ -96,7 +89,7 @@ body {
   font-family: var(--text-font);
   font-optical-sizing: auto;
   font-weight: var(--text-font-weight);
-  font-size: 0.9rem;
+  font-size: var(--text-font-size);
   margin: 0;
   padding: 0;
   height: 100%
@@ -124,7 +117,7 @@ h1 {
   font-family: var(--heading-font-family);
   font-weight: var(--heading-font-weight);
   font-style: normal;
-  font-size: 3.0rem;
+  font-size: var(--heading-font-size);
   color: var(--title-color);
   line-height: 2.8rem;
 }
@@ -257,6 +250,8 @@ nav#top {
   margin: 0;
   height: 15vh;
   text-align: center;
+  flex-basis: 100%;
+  flex-wrap: wrap;
 
   display: flex;
   vertical-align: middle;
@@ -273,17 +268,15 @@ nav#top {
     color: var(--title-color);
     font-family: var(--heading-font-family);
     display: block;
-    flex-grow: 1;
-    text-align: left;
     margin-left: 0.5rem;
-    font-size: 2.5rem;
+    font-size: 5rem;
   }
 
   ul {
     list-style-type: none;
     padding: 0;
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 2.0rem;
 
     li {
       display: inline-block;
@@ -302,13 +295,17 @@ nav#top {
       a:hover {
         color: var(--link-hover-color);
       }
-
     }
+
+  }
+
+  div#links {
+    flex-grow: 1;
   }
 
   div#avatar {
-    max-width: 50px;
-    max-height: 50px;
+    max-width: 180px;
+    max-height: 180px;
     padding: 0;
     margin: 0;
   }
@@ -349,8 +346,7 @@ strong {
 p {
   vertical-align: middle;
   text-align: justify;
-  line-height: 1.25rem;
-  ;
+  line-height: var(--text-line-height);
 }
 
 div#tags {
@@ -405,7 +401,7 @@ a[href^="https://"]:hover::after {
 blockquote {
   margin: 0;
   padding: 0;
-  font-size: 0.95rem;
+  font-size: var(--text-font-size);
   color: var(--blockquote-text-color);
   border: 0;
   border-radius: 2px;
@@ -422,7 +418,7 @@ blockquote {
 div.highlight {
   margin: 0;
   padding: 0;
-  width: 98%;
+  width: 95%;
   margin-left: auto;
   margin-right: auto;
 
@@ -430,6 +426,7 @@ div.highlight {
     background-color: #1e1e2e !important;
     padding: 1rem;
     border-radius: 8px;
+    overflow: scroll;
   }
 }
 
@@ -464,4 +461,70 @@ div#posts {
     font-size: 0.8rem;
     margin-top: -0.2rem;
   }
+}
+
+@media screen and (max-width: 1280px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  :root {
+    --heading-font-size: 6rem;
+    --text-font-size: 2.0rem;
+    --text-line-height: 3.5rem;
+    --tags-font-size: 1.7rem;
+  }
+
+  h1 {
+    line-height: 5rem;
+  }
+
+  h2 {
+    font-size: 4rem;
+    line-height: 4rem;
+  }
+
+  h3 {
+    font-size: 3rem;
+  }
+
+  div#content p code {
+    font-size: 2.0rem;
+  }
+
+  div.highlight {
+    width: 95vw;
+
+    pre {
+      font-size: 2.0rem;
+
+      code {
+        line-height: 2.5rem;
+      }
+    }
+  }
+
+  a[href^="https://"]:after {
+    content: "";
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.15rem;
+    margin-left: 0.05rem;
+    vertical-align: middle;
+    text-decoration: none;
+    display: inline-block;
+    content: '';
+    -webkit-mask: url(/icons/external-link.svg) no-repeat 50% 50%;
+    mask: url(/icons/external-link.svg) no-repeat 50% 50%;
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    background-color: var(--link-color);
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  .hide-on-desktop {
+    display: none !important;
+  }
+
 }
