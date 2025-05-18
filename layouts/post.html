@@ -1,0 +1,33 @@
+{{ define "title" }}
+{{ .Title }} - {{ .Site.Title }}
+{{ end }}
+{{ define "main" }}
+<div id="content">
+  <div>
+    <div id="title">
+      <div id="tags">
+        {{ range .Params.Tags }}<span class="tag">#{{ . }}</span>{{ end }}
+      </div>
+      <h1>{{ .Title }}</h1>
+      <div id="about">
+        <p>
+          <span>Por </span>
+          <img class="avatar" src="/images/avatar.png" />
+          <span class="author">{{ .Params.Author}}</span>
+          <span>em </span>
+          <span class="date">{{ .Date.Format "02/01/2006" }}</span>
+        </p>
+      </div>
+    </div>
+    <div id="toc-in-content">
+      {{ .TableOfContents }}
+    </div>
+    <div id="post">
+      {{ .Content }}
+    </div>
+  </div>
+</div>
+<div id="sidenav">
+  {{ .TableOfContents }}
+</div>
+{{ end }}

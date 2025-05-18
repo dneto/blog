@@ -1,0 +1,341 @@
+@import url('https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@300;400;500;600;700;800;900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@300;400;500;600;700;800;900&family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+
+@font-face {
+  font-family: "Commit Mono";
+  src: url("fonts/CommitMono\ VariableFont.woff2") format('woff');
+}
+
+:root {
+  color-scheme: light dark;
+  --text-font: "Literata", serif;
+  --heading-font: "Inknut Antiqua", serif;
+  --code-font: "Commit Mono", monospace;
+  --tags-font-family: "Inknut Antiqua", sans-serif;
+  --about-font-family: "Inknut Antiqua", sans-serif;
+  --top-font-family: "Inknut Antiqua", sans-serif;
+  --text-font-weight: light-dark(250, 300);
+  --space-md: 1.5rem;
+
+  --background-color: light-dark(#eff1f5, #11111b);
+  --text-color: light-dark(#4c4f69, #cdd6f4);
+  --link-color: light-dark(#1e66f5, #74c7ec);
+  --link-hover-color: light-dark(#e64553, #f38ba8);
+  --title-color: light-dark(#fe640b, #fab387);
+  --heading-color: light-dark(#04a5e5, #b4befe);
+  --blockquote-color: light-dark(#7287fd, #b4befe);
+  --blockquote-text-color: light-dark(#5c5f77, #bac2de);
+  --tag-background-color: light-dark(#e6e9ef, #1e1e2e);
+  --tag-color: light-dark(#4c4f69, #cdd6f4);
+  --code-color: light-dark(#5c5f77, #bac2de);
+  --surface-color: light-dark(#ccd0da, #313244);
+}
+
+@media only screen and (max-width:1285px) {
+  div#sidenav {
+    display: none;
+  }
+
+  div#toc-in-content {
+    display: block;
+    margin-bottom: 1rem;
+  }
+}
+
+nav#TableOfContents {
+  &:before {
+    content: 'Conteúdo';
+    font-family: var(--heading-font);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--heading-color);
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1rem;
+
+    li {
+      a {
+        color: var(--text-color);
+        text-decoration: none;
+        font-weight: 500;
+        font-style: normal;
+
+      }
+
+      a:hover {
+        color: var(--link-hover-color);
+      }
+
+      ul {
+        padding-left: 1.0rem;
+      }
+    }
+  }
+}
+
+@media only screen and (min-width:1285px) {
+  div#toc-in-content {
+    display: none;
+  }
+
+  div#sidenav {
+    display: flex;
+    flex-basis: 20%;
+    position: sticky;
+    align-self: flex-start;
+  }
+}
+
+
+nav#top {
+  margin: 1.0rem var(--space-md) 0;
+  font-family: var(--top-font-family);
+
+  ul {
+    padding: 0;
+    margin: 0;
+
+    li {
+      margin-right: 0.8rem;
+      list-style: none;
+      display: inline;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+  }
+
+  a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-style: normal;
+  }
+
+  a:hover {
+    color: var(--link-hover-color);
+  }
+}
+
+html {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--text-font);
+  font-optical-sizing: auto;
+  font-weight: var(--text-font-weight);
+  font-size: 0.9rem;
+  margin: 0;
+  padding: 0;
+}
+
+code {
+  font-family: var(--code-font);
+  font-weight: 400;
+  line-height: 1.3rem;
+}
+
+pre {
+  font-weight: 300;
+  font-style: normal;
+  font-size: 0.9rem;
+}
+
+p {
+  text-align: justify;
+}
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-family: var(--heading-font);
+  font-weight: 900;
+  font-style: normal;
+  font-size: 2.5rem;
+  color: var(--title-color);
+  line-height: 2.8rem;
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-family: var(--heading-font);
+  font-weight: 800;
+  font-style: normal;
+  font-size: 2.0rem;
+  color: var(--heading-color);
+  line-height: 2.8rem;
+}
+
+h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-family: var(--heading-font);
+  font-weight: 800;
+  font-style: normal;
+  font-size: 1.5rem;
+  line-height: 2.0rem;
+  color: var(--heading-color);
+}
+
+h4 {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-family: var(--heading-font);
+  font-weight: 700;
+  font-style: normal;
+  font-size: 1.2rem;
+  color: var(--heading-color);
+}
+
+div#main {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+
+div#content {
+  margin-right: auto;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  width: auto;
+  flex: 1;
+
+  & p code {
+    color: var(--code-color);
+    background-color: var(--surface-color);
+    border-radius: 5px;
+    padding: 0 0.2rem;
+    font-size: 0.8rem;
+  }
+}
+
+strong {
+  font-weight: 700;
+}
+
+div#about {
+  margin: -0.8rem 0 -0.2rem 0;
+  padding: 0;
+  font-weight: 350;
+
+  .date {
+    font-weight: 600;
+    padding: 0 0.2rem;
+  }
+
+  .author {
+    font-weight: 600;
+    padding: 0 0.2rem;
+  }
+
+  p {
+    display: inline-flex;
+    height: 24px;
+    font-size: 0.8rem;
+
+    span {
+      vertical-align: middle;
+    }
+  }
+
+  img.avatar {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-left: 0.5rem;
+  }
+}
+
+
+p {
+  vertical-align: middle;
+  text-align: justify;
+}
+
+div#tags {
+  margin: 0.2rem 0 0.5rem;
+
+  span.tag {
+    background-color: var(--tag-background-color);
+    padding: 0.2rem 0.5rem;
+    margin-right: 0.25rem;
+    border-radius: 5px;
+    color: var(--tag-color);
+    font-size: 0.7rem;
+    font-weight: var(--text-font-weight);
+    font-family: var(--tags-font-family);
+  }
+}
+
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+  font-weight: 500;
+  font-style: normal;
+}
+
+a:hover {
+  color: var(--link-hover-color);
+}
+
+a[href^="https://"]:after {
+  content: "";
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-bottom: 0.15rem;
+  margin-left: 0.05rem;
+  vertical-align: middle;
+  text-decoration: none;
+  display: inline-block;
+  content: '';
+  -webkit-mask: url(/icons/external-link.svg) no-repeat 50% 50%;
+  mask: url(/icons/external-link.svg) no-repeat 50% 50%;
+  -webkit-mask-size: cover;
+  mask-size: cover;
+  background-color: var(--link-color);
+}
+
+a[href^="https://"]:hover::after {
+  background-color: #f38ba8;
+}
+
+blockquote {
+  margin: 0;
+  padding: 0;
+  font-size: 0.95rem;
+  color: var(--blockquote-text-color);
+  border: 0;
+  border-radius: 2px;
+  border-left: 4px solid var(--blockquote-color);
+  padding-left: 1rem;
+  margin-left: 1rem;
+  width: 95%;
+
+  p {
+    padding: 0.4rem 0;
+  }
+}
+
+div.highlight {
+  margin: 0;
+  padding: 0;
+  width: 98%;
+  margin-left: auto;
+  margin-right: auto;
+
+  pre {
+    background-color: #1e1e2e !important;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+}

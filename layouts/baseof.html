@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>{{ block "title" . }}
+        <!-- Blocks may include default content. -->
+        {{ .Site.Title }}
+        {{ end }}
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=M+PLUS+Rounded+1c:wght@900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/main.css">
+    <link rel="icon" type="image/png" href="/images/avatar.png" />
+</head>
+
+<body>
+    <nav id="top">
+        <ul>
+            <li><a href="{{ .Site.BaseURL }}">Início</a></li>
+            <li><a href="/posts">Publicações</a></li>
+        </ul>
+    </nav>
+    <div id="main">
+        <!-- Code that all your templates share, like a header -->
+        {{ block "main" . }}
+        <!-- The part of the page that begins to differ between templates -->
+        {{ end }}
+        {{ block "footer" . }}
+        <!-- More shared code, perhaps a footer but that can be overridden if need be in  -->
+        {{ end }}
+    </div>
+</body>
+
+</html>

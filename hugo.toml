@@ -1,0 +1,11 @@
+baseURL = 'https://example.org/'
+languageCode = 'pt-br'
+title = 'My New Hugo Site'
+
+[markup]
+[markup.highlight]
+style = 'catppuccin-mocha'
+
+[markup.goldmark]
+[markup.goldmark.extensions]
+footnote = true
