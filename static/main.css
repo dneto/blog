@@ -283,7 +283,6 @@ strong {
 
 p {
   vertical-align: middle;
-  text-align: justify;
   line-height: var(--text-line-height);
 }
 
