@@ -1,6 +1,6 @@
 +++
 date = '2025-05-16T23:36:38-03:00'
-draft = true
+draft = false
 title = 'Contextos no Go'
 layout = 'post'
 tags = ['Go', 'Programação']
