@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Programação on dneto.me</title>
+    <link>http://localhost:1313/tags/programa%C3%A7%C3%A3o/</link>
+    <description>Recent content in Programação on dneto.me</description>
+    <generator>Hugo</generator>
+    <language>pt-BR</language>
+    <lastBuildDate>Fri, 16 May 2025 23:36:38 -0300</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/programa%C3%A7%C3%A3o/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Desmistificando contextos no Go</title>
+      <link>http://localhost:1313/posts/2025-05-17-go-contexts/</link>
+      <pubDate>Fri, 16 May 2025 23:36:38 -0300</pubDate>
+      <guid>http://localhost:1313/posts/2025-05-17-go-contexts/</guid>
+      <description>&lt;h2 id=&#34;introdução&#34;&gt;Introdução&lt;/h2&gt;&#xA;&lt;p&gt;Uma das responsabilidades que possuo onde trabalho altualmente é ensinar e&#xA;orientar pessoas menos experientes e uma das principais dúvidas que recebo&#xA;relacionadas a Go é sobre &lt;strong&gt;contextos&lt;/strong&gt;.&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;Mas eu não aguento mais passar isso em praticamente toda chamada que faço.&lt;br&gt;&#xA;Outras linguagens não têm isso, por que eu tenho que me preocupar 🤯?&lt;/p&gt;&#xA;&lt;p&gt;&lt;em&gt;- Pessoa desenvolvedora começando a aprender Go&lt;/em&gt;&lt;/p&gt;&lt;/blockquote&gt;&#xA;&lt;p&gt;Antes de começar a falar qualquer coisa sobre os contextos, é importante lembrar&#xA;que Go é uma linguagem criada com a filosofia de que deixar as coisas&#xA;&lt;em&gt;explícitas&lt;/em&gt; é melhor do que ter tudo &lt;em&gt;implícito&lt;/em&gt;.&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;Explícito é melhor que ímplicito&lt;/p&gt;&#xA;&lt;p&gt;&lt;em&gt;- Item 2 do &lt;a href=&#34;https://peps.python.org/pep-0020/&#34;&gt;Zen of Python&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;&lt;/blockquote&gt;&#xA;&lt;p&gt;&lt;em&gt;Apesar das coisas nem sempre serem tão explícitas assim no Python, esse é um bom conselho a ser seguido para qualquer linguagem. Inclusive, recomendo também a leitura do &lt;a href=&#34;https://dave.cheney.net/2020/02/23/the-zen-of-go&#34;&gt;Zen of Go&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;Bom, se você já parou para ler documentação do pacote&#xA;&lt;a href=&#34;https://pkg.go.dev/context&#34;&gt;context&lt;/a&gt; alguma vez, talvez tenha sentido&#xA;dificuldade em entender de quando e onde se deve usar contextos. Isso porque a&#xA;documentação se preocupa em informar quais funcionalidades existem e não casos&#xA;de uso reais.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

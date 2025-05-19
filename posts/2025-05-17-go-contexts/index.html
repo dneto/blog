@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <title>
+Desmistificando contextos no Go - dneto.me
+
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=M+PLUS+Rounded+1c:wght@900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/main.css">
+    <link rel="icon" type="image/png" href="/images/avatar.png" />
+</head>
+
+<body>
+    <nav id="top" class="hide-on-desktop">
+        <div id="avatar">
+            <img src="/images/avatar.png" alt="Demétrio Neto" />
+        </div>
+        <div style="flex-grow: 1;">
+            <h1 class="name">Demétrio Neto</h1>
+            <div id="links">
+                <ul>
+                    <li><a href="/">Início</a></li>
+                    <li><a href="/posts/">Publicações</a></li>
+                    <li><a href="/about/">Sobre</a></li>
+                    <li><a href="/tags/">Tags</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div id="main">
+        
+        
+<div id="content">
+  <div>
+    <div id="title">
+    <a href="/posts/2025-05-17-go-contexts/">
+        <h1>Desmistificando contextos no Go</h1>
+    </a>
+    <div id="tags">
+        <span class="tag">16 de maio de 2025</span>·
+        <span class="tag">6 minutos</span>·
+        <span class="tag">1159 palavras</span>· <span class="tag">#Go</span>· <span class="tag">#Programação</span>
+    </div>
+</div>
+    <div id="toc-in-content">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introdução">Introdução</a></li>
+    <li><a href="#interropendo-fluxos">Interropendo fluxos</a></li>
+    <li><a href="#a-interface-contextcontext">A interface context.Context</a></li>
+    <li><a href="#criando-novos-contextos">Criando novos contextos</a>
+      <ul>
+        <li><a href="#com-cancelamento">Com cancelamento</a></li>
+        <li><a href="#com-deadline-e-timeout">Com deadline e timeout</a></li>
+        <li><a href="#com-valores">Com valores</a></li>
+        <li><a href="#crie-o-seu-próprio">Crie o seu próprio</a></li>
+      </ul>
+    </li>
+    <li><a href="#lidando-com-o-cancelamento">Lidando com o cancelamento</a>
+      <ul>
+        <li><a href="#verificando-o-contexterr">Verificando o context.Err()</a></li>
+        <li><a href="#escutando-o-ctxdone">Escutando o ctx.Done()</a></li>
+        <li><a href="#usando-o-contextafterfunc">Usando o context.AfterFunc</a></li>
+      </ul>
+    </li>
+    <li><a href="#referências-e-material-adicional">Referências e material adicional</a></li>
+  </ul>
+</nav>
+    </div>
+    <div id="post">
+      <h2 id="introdução">Introdução</h2>
+<p>Uma das responsabilidades que possuo onde trabalho altualmente é ensinar e
+orientar pessoas menos experientes e uma das principais dúvidas que recebo
+relacionadas a Go é sobre <strong>contextos</strong>.</p>
+<blockquote>
+<p>Mas eu não aguento mais passar isso em praticamente toda chamada que faço.<br>
+Outras linguagens não têm isso, por que eu tenho que me preocupar 🤯?</p>
+<p><em>- Pessoa desenvolvedora começando a aprender Go</em></p></blockquote>
+<p>Antes de começar a falar qualquer coisa sobre os contextos, é importante lembrar
+que Go é uma linguagem criada com a filosofia de que deixar as coisas
+<em>explícitas</em> é melhor do que ter tudo <em>implícito</em>.</p>
+<blockquote>
+<p>Explícito é melhor que ímplicito</p>
+<p><em>- Item 2 do <a href="https://peps.python.org/pep-0020/">Zen of Python</a></em></p></blockquote>
+<p><em>Apesar das coisas nem sempre serem tão explícitas assim no Python, esse é um bom conselho a ser seguido para qualquer linguagem. Inclusive, recomendo também a leitura do <a href="https://dave.cheney.net/2020/02/23/the-zen-of-go">Zen of Go</a></em></p>
+<p>Bom, se você já parou para ler documentação do pacote
+<a href="https://pkg.go.dev/context">context</a> alguma vez, talvez tenha sentido
+dificuldade em entender de quando e onde se deve usar contextos. Isso porque a
+documentação se preocupa em informar quais funcionalidades existem e não casos
+de uso reais.</p>
+<p>Nessa publicação, vou tentar explicar como os contextos podem ser úteis e porque
+é importante que eles sejam passados ou repassados entre chamadas que podem
+demorar.</p>
+<h2 id="interropendo-fluxos">Interropendo fluxos</h2>
+<p>Imagine uma operação longa sendo realizada. Pode ser o download de um arquivo
+grande, uma requisição para uma API REST, uma consulta ao banco de dados ou a
+execução de tarefa que vai demorar muito tempo. Como você faria pra cancelar
+algo, se fosse necessário?</p>
+<p>Em outras linguagens, cada biblioteca ou framework oferece sua solução para
+lidar com seus respectivos ciclos de vida. Os desenvolvedores do Go enxergaram a
+necessidade de gerenciar o e resolveram implementaram o pacote <code>context</code> na
+biblioteca padrão do Go. Convenientemente, esse padrão não só é útil para
+requisições web, mas para qualquer tipo de tarefa que possa ser cancelada,
+fazendo com que esse padrão seja amplamente utilizado nessa linguagem.</p>
+<p>Já entendemos que existem situações que precisamos de um controle mais fino
+sobre o ciclo de vida de um fluxo. Mas como fazer isso em Go?
+O artigo <a href="https://go.dev/blog/pipelines">Go Concurrency Patterns: Pipelines and Cancelation</a>
+já mostra uma forma de cancelar um processamento em <em>goroutines</em> usando canais
+no estilo <code>done := make(chan struct{})</code>. &ldquo;Outro&rdquo; (vamos ver mais tarde o porque
+dessas aspas) padrão nos é apresentada em outro artigo: <a href="https://go.dev/blog/context">Go Concurrency Patterns:Context</a>,
+que nos apresenta o pacote <a href="https://pkg.go.dev/context"><code>context</code></a> que, olha só,
+estamos falando nesse post.</p>
+<p>Com esses padrões é possível sinalizar que um fluxo deve ser interrompido,
+possibilitando o encerramento de forma <em>graciosa</em> (<em>gracious shutdown</em>).</p>
+<h2 id="a-interface-contextcontext">A interface context.Context</h2>
+<p>Vamos dar uma olhada na documentação da interface <a href="https://pkg.go.dev/context#Context"><code>context.Context</code></a>:</p>
+<blockquote>
+<p><em>A Context carries a deadline, a cancellation signal, and other values across API boundaries.</em><br>
+<em>Context&rsquo;s methods may be called by multiple goroutines simultaneously.</em></p></blockquote>
+<p>Agora, em tradução livre para o português:</p>
+<blockquote>
+<p><em>Um contexto carrega um prazo, um sinal de cancelamento, e outros valores através dos limites da API.</em><br>
+<em>Os métodos do tipo Context podem ser chamados por múltiplas goroutines simultâneamente</em></p></blockquote>
+<p>Se você foi curioso e deu uma olhada na própria definição da interface,
+possivelmente notou que ela não exige um método <code>Cancel()</code>. Ora, a existência da
+possibilidade de cancelar um contexto em qualquer escopo seria terrivelmente
+perigoso, e poderia impactar no ciclo de vida de muitos fluxos em paralelo de
+forma imprevisível. Imagine uma tarefa que inicia várias <em>goroutines</em> em
+paralelo para realizar o download de vários arquivos, a exposição de uma forma
+de cancelar dentro do próprio contexto poderia possibilitar o cancelamento de
+outros downloads iniciados pela mesma tarefa, seria uma tragédia 😟.</p>
+<p>Então, caso você deseje ter um controle fino sobre o ciclo de vida de um
+determinado fluxo da sua aplicação, a recomendação é criar uma nova instância do
+<code>context.Context</code>, o pacote <code>context</code> já oferece algumas formas para criar
+contextos. Vamos dar uma olhada nelas?</p>
+<h2 id="criando-novos-contextos">Criando novos contextos</h2>
+<p>Atualmente, existem três formas de criar um novo contexto utilizando o pacote
+<code>context</code>, além da possibilidade de criar seu próprio contexto implementando a
+interface <code>context.Context</code>.</p>
+<h3 id="com-cancelamento">Com cancelamento</h3>
+<p>A função <code>context.WithCancel</code> possui dois retornos. O primeiro é o próprio
+contexto, que deve ser repassado nas chamadas em que ele se faz necessário, já o
+segundo é uma função de cancelamento que, ao ser chamada, irá cancelar o
+contexto criado.</p>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">contextWithCancel</span>() {
+</span></span><span style="display:flex;"><span>    ctx, cancel <span style="color:#89dceb;font-weight:bold">:=</span> context.<span style="color:#89b4fa">WithCancel</span>(context.<span style="color:#89b4fa">Background</span>())
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">defer</span> <span style="color:#89b4fa">cancel</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6c7086;font-style:italic">// processamento</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="com-deadline-e-timeout">Com deadline e timeout</h3>
+<p>O pacote <code>context</code> também oferece opções para criar contextos com uma data
+limite. A função <code>context.WithDeadline</code> recebe um <code>time.Time</code> e irá cancelar o
+contexto após o tempo informado.</p>
+<p>Já a função <code>context.WithTimeout</code> recebe um <code>time.Duration</code> e irá cancelar o
+contexto após o <strong>periodo</strong> informado.</p>
+<h3 id="com-valores">Com valores</h3>
+<p>Também existe a função <code>context.WithValue</code>, que permite a criação de um contexto
+com valores armazenados internamente. Recomendo <strong>bastante cautela</strong> ao utilizar
+contextos dessa forma, embora seja muito útil para passar agentes de métricas e
+tracing ou dados de um request, como um request id, entre as diferentes camadas,
+o abuso dessa opção pode causar problemas de clareza no código.</p>
+<h3 id="crie-o-seu-próprio">Crie o seu próprio</h3>
+<p>Por se tratar de uma interface, você pode criar sua própria implementação.
+Pessoalmente não recomendo seguir por esse caminho, pois nesses meus quase 10
+anos de Go eu ainda não vi nenhum cenário que as interfaces fornecidas pela
+biblioteca padrão não foram suficientes.</p>
+<h2 id="lidando-com-o-cancelamento">Lidando com o cancelamento</h2>
+<p><em>Não, não estamos falando de redes sociais</em> 🫠</p>
+<p>A biblioteca padrão oferece três formas de tratar contextos cancelados:</p>
+<ol>
+<li>Verificar o erro retornado pelo <code>context.Err()</code></li>
+<li>Escutar o canal <code>context.Done()</code></li>
+<li>Implementar um callback e usar com o <code>context.AfterFunc()</code></li>
+</ol>
+<h3 id="verificando-o-contexterr">Verificando o context.Err()</h3>
+<p>Essa abordagem é útil se você quiser verificar se o contexto já foi cancelado
+antes do processamento realmente acontecer, você pode simplesmente verificar se
+<code>ctx.Err() != nil</code>, a função retornara <code>nil</code> caso o contexto ainda não tenha
+sido cancelado.</p>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">longProcess</span>(ctx context.Context) <span style="color:#f38ba8">error</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">if</span> ctx.<span style="color:#89b4fa">Err</span>() <span style="color:#89dceb;font-weight:bold">!=</span> <span style="color:#fab387">nil</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#6c7086;font-style:italic">// o contexto foi cancelado, só vamos retornar um erro informando o motivo, ok? 👍</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#cba6f7">return</span> fmt.<span style="color:#89b4fa">Errorf</span>(<span style="color:#a6e3a1">&#34;failure before start long process: %w&#34;</span>, ctx.<span style="color:#89b4fa">Err</span>())
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#89b4fa">realLongProcess</span>(ctx)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span> 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="escutando-o-ctxdone">Escutando o ctx.Done()</h3>
+<p>A função <code>ctx.Done()</code> retorna um canal que informa quando o trabalho de um
+determinado contexto deve ser interrompido.</p>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">longProcess</span>(ctx context.Context) <span style="color:#f38ba8">error</span> {
+</span></span><span style="display:flex;"><span>    result <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#89dceb">make</span>(<span style="color:#f38ba8">chan</span> <span style="color:#f38ba8">string</span>, <span style="color:#fab387">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6c7086;font-style:italic">// Aqui usamos o select para escolher entre o resultado do processamento e o</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6c7086;font-style:italic">// cancelamento do contexto, executando o código correspondente.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">for</span>{
+</span></span><span style="display:flex;"><span>        <span style="color:#cba6f7">select</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#cba6f7">case</span> m <span style="color:#89dceb;font-weight:bold">:=</span> <span style="color:#89dceb;font-weight:bold">&lt;-</span><span style="color:#89b4fa">readMessage</span>():
+</span></span><span style="display:flex;"><span>                <span style="color:#6c7086;font-style:italic">// processa o resultado</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#cba6f7">case</span> <span style="color:#89dceb;font-weight:bold">&lt;-</span>ctx.<span style="color:#89b4fa">Done</span>():
+</span></span><span style="display:flex;"><span>                <span style="color:#6c7086;font-style:italic">// tratamento para o cancelamento do contexto</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#cba6f7">return</span> fmt.<span style="color:#89b4fa">Errorf</span>(<span style="color:#a6e3a1">&#34;failure during long process: %w&#34;</span>, ctx.<span style="color:#89b4fa">Err</span>())
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="usando-o-contextafterfunc">Usando o context.AfterFunc</h3>
+<div class="highlight"><pre tabindex="0" style="color:#cdd6f4;background-color:#1e1e2e;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f38ba8">func</span> <span style="color:#89b4fa">longProcess</span>(ctx context.Context) <span style="color:#f38ba8">error</span> {
+</span></span><span style="display:flex;"><span>    stop <span style="color:#89dceb;font-weight:bold">:=</span> context.<span style="color:#89b4fa">AfterFunc</span>(ctx, <span style="color:#f38ba8">func</span>(){
+</span></span><span style="display:flex;"><span>        <span style="color:#6c7086;font-style:italic">// quando o contexto for cancelado, esse código será executado</span>
+</span></span><span style="display:flex;"><span>    })
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">defer</span> <span style="color:#89b4fa">stop</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6c7086;font-style:italic">// processamento</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cba6f7">return</span> <span style="color:#fab387">nil</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="referências-e-material-adicional">Referências e material adicional</h2>
+<ul>
+<li><a href="https://go.dev/blog/pipelines">Go Concurrency Patterns: Pipelines and Cancelation</a></li>
+<li><a href="https://go.dev/blog/context">Go Concurrency Patterns: Context</a></li>
+<li><a href="https://go.dev/blog/context-and-structs">Context and Struct</a></li>
+<li><a href="https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/context">Learn Go with tests: Contexts</a></li>
+<li><a href="https://medium.com/@jamal.kaksouri/the-complete-guide-to-context-in-golang-efficient-concurrency-management-43d722f6eaea">The Complete Guide to Context in Golang: Efficient Concurrency Management</a></li>
+<li><a href="https://victoriametrics.com/blog/go-graceful-shutdown/index.html">Graceful Shutdown in Go: Practical Patterns</a></li>
+</ul>
+<p>Espero que tenha ajudado você e até uma próxima 👋.</p>
+
+    </div>
+  </div>
+</div>
+
+        
+        
+        
+    </div>
+    <nav id="menu" class="hide-on-mobile">
+        <div id=" links">
+            <ul>
+                <li><a href="/">Início</a></li>
+                <li><a href="/posts/">Publicações</a></li>
+                <li><a href="/about/">Sobre</a></li>
+                <li><a href="/tags/">Tags</a></li>
+            </ul>
+        </div>
+        <div id="avatar">
+            <img src="/images/avatar.png" alt="Demétrio Neto" />
+        </div>
+        <h1 class="name">Demétrio Neto</h1>
+        <p>
+            Ola 👋! Eu sou o Demétrio, alguns me chamam de <em>Demi</em>.
+            Nesse espaço vou compartilhar algumas coisas que acho interessante.
+        </p>
+        <div style="flex-grow:1;min-width:0;"></div>
+    </nav>
+</body>
+
+</html>
