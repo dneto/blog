@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Chonburi&family=Orelega+One&family=Titan+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Bitter:ital,wght@0,100..900;1,100..900&family=Kreon:wght@300..700&family=Roboto+Slab:wght@100..900&family=Rokkitt:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&family=Slabo+27px&family=Zilla+Slab:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
 
 @font-face {
   font-family: "Commit Mono";
@@ -9,18 +9,18 @@
 
 :root {
   color-scheme: light dark;
-  --text-font: "Arvo", serif;
-  --text-font-weight: light-dark(250, 300);
-  --text-font-size: 1.2rem;
-  --text-line-height: 1.5rem;
+  --text-font: "Kreon", serif;
+  --text-font-weight: 200;
+  --text-font-size: 1.1rem;
+  --text-line-height: 1.4rem;
 
-  --heading-font-family: "Titan One", serif;
-  --heading-font-weight: 400;
+  --heading-font-family: "Rubik", sans-serif;
+  --heading-font-weight: 900;
   --heading-font-size: 3.5rem;
 
   --code-font: "Commit Mono", monospace;
 
-  --tags-font-family: "Arvo", sans-serif;
+  --tags-font-family: var(--text-font);
   --tags-font-size: 1rem;
   --tag-color: light-dark(#acb0be, #585b70);
 
@@ -32,7 +32,7 @@
   --link-color: light-dark(#1e66f5, #74c7ec);
   --link-hover-color: light-dark(#e64553, #f38ba8);
   --title-color: light-dark(#fe640b, #fab387);
-  --heading-color: light-dark(#04a5e5, #b4befe);
+  --heading-color: light-dark(#8839ef, #b4befe);
   --blockquote-color: light-dark(#7287fd, #b4befe);
   --blockquote-text-color: light-dark(#5c5f77, #bac2de);
   --tag-background-color: light-dark(#e6e9ef, #1e1e2e);
@@ -120,6 +120,7 @@ h1 {
   font-size: var(--heading-font-size);
   color: var(--title-color);
   line-height: 2.8rem;
+  letter-spacing: 0.05rem;
 }
 
 h2 {
@@ -128,20 +129,21 @@ h2 {
   font-family: var(--heading-font-family);
   font-weight: var(--heading-font-weight);
   font-style: normal;
-  font-size: 2.0rem;
+  font-size: calc(var(--heading-font-size) * 0.85);
   color: var(--heading-color);
   line-height: 2.8rem;
+  letter-spacing: 0.05rem;
 }
 
 h3 {
   margin-top: 0;
   margin-bottom: 0;
   font-family: var(--heading-font-family);
-  font-weight: var(--heading-font-weight);
+  font-weight: calc(var(--heading-font-weight) * 0.8);
   font-style: normal;
-  font-size: 1.5rem;
+  font-size: calc(var(--heading-font-size) * 0.6);
   line-height: 2.0rem;
-  color: var(--heading-color);
+  letter-spacing: 0.05rem;
 }
 
 h4 {
@@ -152,6 +154,7 @@ h4 {
   font-style: normal;
   font-size: 1.2rem;
   color: var(--heading-color);
+  letter-spacing: 0.05rem;
 }
 
 div#main {
@@ -353,7 +356,7 @@ div#tags {
   margin: 0;
   margin-top: 0.45rem;
   color: var(--tag-color);
-  font-weight: 100;
+  font-weight: 200;
   font-family: var(--tags-font-family);
   font-size: var(--tags-font-size);
 
@@ -470,9 +473,9 @@ div#posts {
 
   :root {
     --heading-font-size: 6rem;
-    --text-font-size: 2.0rem;
-    --text-line-height: 3.5rem;
-    --tags-font-size: 1.7rem;
+    --text-font-size: 1.5rem;
+    --text-line-height: 2.2rem;
+    --tags-font-size: 1.2rem;
   }
 
   h1 {
@@ -480,26 +483,25 @@ div#posts {
   }
 
   h2 {
-    font-size: 4rem;
     line-height: 4rem;
   }
 
   h3 {
-    font-size: 3rem;
+    line-height: 3rem;
   }
 
   div#content p code {
-    font-size: 2.0rem;
+    font-size: 1.3rem;
   }
 
   div.highlight {
     width: 95vw;
 
     pre {
-      font-size: 2.0rem;
+      font-size: 1.3rem;
 
       code {
-        line-height: 2.5rem;
+        line-height: 1.8rem;
       }
     }
   }
@@ -526,5 +528,10 @@ div#posts {
   .hide-on-desktop {
     display: none !important;
   }
+}
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-font-weight: 350;
+  }
 }
