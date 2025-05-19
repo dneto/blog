@@ -5,8 +5,6 @@
   src: url("fonts/CommitMono\ VariableFont.woff2") format('woff');
 }
 
-
-
 :root {
   color-scheme: light dark;
   --text-font: "Kreon", serif;
@@ -30,7 +28,7 @@
   --code-font: "Commit Mono", monospace;
 
   --tags-font-family: var(--text-font);
-  --tags-font-size: 1rem;
+  --tags-font-size: var(--text-font-size);
   --tag-color: light-dark(#acb0be, #585b70);
 
   --top-font-family: "Arvo", sans-serif;
@@ -119,6 +117,7 @@ p {
   text-align: justify;
 }
 
+
 h1 {
   margin: 0;
   margin-bottom: 0.2rem;
@@ -141,6 +140,14 @@ h2 {
   color: var(--heading-color);
   line-height: 2.8rem;
   letter-spacing: 0.05rem;
+
+  &:hover:before {
+    content: '#';
+    color: #ccd0da;
+    font-style: italic;
+    position: relative;
+    right: .6ch;
+  }
 }
 
 h3 {
@@ -290,7 +297,7 @@ div#tags {
   margin: 0;
   margin-top: 0.45rem;
   color: var(--tag-color);
-  font-weight: 200;
+  font-weight: 350;
   font-family: var(--tags-font-family);
   font-size: var(--tags-font-size);
 
