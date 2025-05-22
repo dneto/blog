@@ -3,7 +3,7 @@ date = '2025-05-16T23:36:38-03:00'
 draft = false
 title = 'Contextos no Go'
 layout = 'post'
-tags = ['Go', 'Programação']
+tags = ['go', 'programação']
 author = 'Demétrio Neto'
 +++
 
@@ -13,116 +13,345 @@ Uma das responsabilidades que possuo onde trabalho altualmente é ensinar e
 orientar pessoas menos experientes e uma das principais dúvidas que recebo
 relacionadas a Go é sobre **contextos**.
 
+> [!MELT] Desabafo
 > Mas eu não aguento mais passar isso em praticamente toda chamada que faço.\
-> Outras linguagens não têm isso, por que eu tenho que me preocupar 🤯?
+> Outras linguagens não têm isso, por que eu tenho que me preocupar?
 >
 > _- Pessoa desenvolvedora começando a aprender Go_
 
-Antes de começar a falar qualquer coisa sobre os contextos, é importante lembrar
-que Go é uma linguagem criada com a filosofia de que deixar as coisas
-_explícitas_ é melhor do que ter tudo _implícito_.
+Para explicar sobre contextos, precisamos entender alguns conceitos antes
 
-> Explícito é melhor que ímplicito
+> [!ANALOGY] Analogia
+>Imagine que você vai almoçar em um restaurante. Ao se sentar, escolhe um prato
+>do cardápio, chama o garçom e faz seu pedido.
 >
-> _- Item 2 do [Zen of Python](https://peps.python.org/pep-0020/)_
+>O garçom anota o pedido e o envia para a cozinha, onde os cozinheiros começam a prepará-lo.
 >
+>Agora, imagine que, no meio disso, você recebe uma ligação urgente e precisa
+>sair imediatamente. Então, você cancela o pedido.
+>
+>O que acontece com o prato que estava sendo preparado? Isso depende do
+>funcionamento do restaurante: ele pode descartar tudo o que já foi feito, ou
+>tentar reaproveitar parte dos ingredientes que ainda não estragaram.
 
-_Apesar das coisas nem sempre serem tão explícitas assim no Python, esse é um bom conselho a ser seguido para qualquer linguagem. Inclusive, recomendo também a leitura do [Zen of Go](https://dave.cheney.net/2020/02/23/the-zen-of-go)_
+Assim como o restaurante precisou fazer algo com o pedido cancelado, existem
+situações em que precisamos saber quando uma tarefa precisa ser interrompida.
+Você, após perceber que precisava sair e não voltaria, cancelou o pedido com o
+garçom, que avisou a cozinha.
 
-Bom, se você já parou para ler documentação do pacote
-[context](https://pkg.go.dev/context) alguma vez, talvez tenha sentido
-dificuldade em entender de quando e onde se deve usar contextos. Isso porque a
-documentação se preocupa em informar quais funcionalidades existem e não casos
-de uso reais.
-
-Nessa publicação, vou tentar explicar como os contextos podem ser úteis e porque
-é importante que eles sejam passados ou repassados entre chamadas que podem
-demorar.
+Algumas vezes uma sinalização simples pode servir, mas em outros casos, como
+esse do restaurante, o cancelamento precisa ser propagado e pode ter algumas
+consequências.
 
 ## Interropendo fluxos
 
-Imagine uma operação longa sendo realizada. Pode ser o download de um arquivo
+Além do exemplo do restaurante, podemos pensar em situações mais próximas da
+realidade de um desenvolvedor: pode ser o download de um arquivo
 grande, uma requisição para uma API REST, uma consulta ao banco de dados ou a
-execução de tarefa que vai demorar muito tempo. Como você faria pra cancelar
-algo, se fosse necessário?
+execução de qualquer tarefa que pode demorar muito tempo.
 
-Em outras linguagens, cada biblioteca ou framework oferece sua solução para
-lidar com seus respectivos ciclos de vida. Os desenvolvedores do Go enxergaram a
-necessidade de gerenciar o e resolveram implementaram o pacote `context` na
-biblioteca padrão do Go. Convenientemente, esse padrão não só é útil para
-requisições web, mas para qualquer tipo de tarefa que possa ser cancelada,
-fazendo com que esse padrão seja amplamente utilizado nessa linguagem.
+Como você faria pra cancelar algo, se fosse necessário? E como faria pra
+notificar esse cancelamento em efeito cascata?
 
-Já entendemos que existem situações que precisamos de um controle mais fino
-sobre o ciclo de vida de um fluxo. Mas como fazer isso em Go?
-O artigo [Go Concurrency Patterns: Pipelines and Cancelation](https://go.dev/blog/pipelines)
-já mostra uma forma de cancelar um processamento em _goroutines_ usando canais
-no estilo `done := make(chan struct{})`. "Outro" (vamos ver mais tarde o porque
-dessas aspas) padrão nos é apresentada em outro artigo: [Go Concurrency Patterns:Context](https://go.dev/blog/context),
-que nos apresenta o pacote [`context`](https://pkg.go.dev/context) que, olha só,
-estamos falando nesse post.
+Cada linguagens, biblioteca ou framework oferece sua solução para
+lidar tanto com o ciclo de vida, como com o tempo de vida dos fluxos. Os
+desenvolvedores do Go enxergaram essa necessidade é e aí que o pacote `context`
+entra em ação.
 
-Com esses padrões é possível sinalizar que um fluxo deve ser interrompido,
-possibilitando o encerramento de forma _graciosa_ (_gracious shutdown_).
+Mas antes de começar a falar qualquer coisa sobre os contextos, é importante
+lembrar que Go é uma linguagem criada com a filosofia de que deixar as coisas
+_**explícitas**_ é melhor do que ter tudo _**implícito**_.
 
-## A interface context.Context
+>[!QUOTE]
+> Explícito é melhor que ímplicito
+>
+> \- Item 2 do [Zen of Python](https://peps.python.org/pep-0020/)
 
-Vamos dar uma olhada na documentação da interface [`context.Context`](https://pkg.go.dev/context#Context):
+_Apesar das coisas nem sempre serem tão explícitas assim no Python, esse é um bom conselho a ser seguido para qualquer linguagem. Inclusive, recomendo também a leitura do [Zen of Go](https://dave.cheney.net/2020/02/23/the-zen-of-go)_
 
+## O pacote `context`
+
+O pacote `context` oferece um padrão para tratar esses cenários em que um sinal
+de cancelamento precisa ser propagado dentro dos limites do código, possibilitando o encerramento de forma graciosa, ou _gracious shutdown_, do fluxo.
+
+### A interface `context.Context`
+
+Vamos começar olhando a [documentação da interface `context.Context`](https://pkg.go.dev/context#Context). Na descrição do tipo, vemos:
+
+> [!QUOTE] Citação
 > _A Context carries a deadline, a cancellation signal, and other values across API boundaries._\
 > _Context's methods may be called by multiple goroutines simultaneously._
 
-Agora, em tradução livre para o português:
-
+> [!TRANSLATION] Tradução
 > _Um contexto carrega um prazo, um sinal de cancelamento, e outros valores através dos limites da API._\
 > _Os métodos do tipo Context podem ser chamados por múltiplas goroutines simultâneamente_
 
-Se você foi curioso e deu uma olhada na própria definição da interface,
-possivelmente notou que ela não exige um método `Cancel()`. Ora, a existência da
-possibilidade de cancelar um contexto em qualquer escopo seria terrivelmente
-perigoso, e poderia impactar no ciclo de vida de muitos fluxos em paralelo de
-forma imprevisível. Imagine uma tarefa que inicia várias _goroutines_ em
-paralelo para realizar o download de vários arquivos, a exposição de uma forma
-de cancelar dentro do próprio contexto poderia possibilitar o cancelamento de
-outros downloads iniciados pela mesma tarefa, seria uma tragédia 😟.
+## Lidando com o cancelamento
 
-Então, caso você deseje ter um controle fino sobre o ciclo de vida de um
-determinado fluxo da sua aplicação, a recomendação é criar uma nova instância do
-`context.Context`, o pacote `context` já oferece algumas formas para criar
-contextos. Vamos dar uma olhada nelas?
+>[!COMMENT] _Não, não estamos falando de redes sociais_
+
+A biblioteca padrão oferece algumas formas de tratar contextos cancelados:
+
+### Verificando se o contexto já foi cancelado
+
+Você pode ativamente verificar se o contexto já foi cancelado, essa abordagem é
+útil para impedir que o fluxo prossiga. A forma mais comum é realizar a
+verificação ao início da função, mas em alguns momentos pode ser importante
+verificar ao final, para garantir que o fluxo não irá continuar.
+
+#### Usando `ctx.Err()`
+
+Você pode simplesmente verificar se retorno de `ctx.Err()` é _não-nulo_. A
+função retornara `nil` caso o contexto ainda não tenha sido cancelado e algum
+erro caso o cancelamento tenha ocorrido.
+
+```go
+// verificação antes do processamento ocorrer
+if ctx.Err() != nil {
+    return fmt.Errorf("falha antes de iniciar: %w", ctx.Err())
+}
+
+// implementação do código
+
+// verificação após o processamento ter ocorrido
+if ctx.Err() != nil {
+    return fmt.Errorf("falha após a execução: %w", ctx.Err())
+}
+```
+
+#### Identificando a causa do cancelamento
+
+> [!WARNING] Essa funcionalidade só está disponível a partir da versão 1.21 do Go
+
+A partir do [Go 1.21](https://tip.golang.org/doc/go1.21#contextpkgcontext)
+existe a opção de associar um `error` como causa do cancelamento de um contexto que conseguimos obter utilizando a [função `context.Cause`](https://pkg.go.dev/context#Cause).
+
+Caso o contexto tenha sido cancelado e exista uma causa _não-nula_, o valor retornado será o erro enviado como causa no momento do cancelamento. Já, se não existir uma causa específica, o valor será o mesmo da chamada `ctx.Err()`, que vimos anteriormente.
+
+```go
+if ctx.Err() != nil {
+    // o contexto foi cancelado, só vamos retornar um erro informando o motivo, ok?
+    return fmt.Errorf("failure before start long process: %w", context.Cause(ctx))
+}
+```
+
+### Escutando o sinal de cancelamento
+
+Além da verificação ativa utilizando o `ctx.Err()`, é possível receber um
+`channel` que informa o cancelamento através da chamada `ctx.Done()`.
+
+Quando a chamada `<-ctx.Done()` é feita, o código aguarda o recebimento através
+do canal, bloqueando a execução da _goroutine_ até receber algum conteúdo.
+
+```go
+<-ctx.Done()
+```
+
+Pela natureza _bloqueante_ da chamada, geralmente usamos uma cláusula `select`
+para escolher entre o resultado do `ctx.Done()` e algum outro canal, como no
+exemplo abaixo:
+
+```go
+response := make(chan string, 1)
+
+go func(){
+    response <- longProcess()
+}
+
+select{
+    case r := <-response:
+        return r
+    case <-ctx.Done():
+        return fmt.Errorf("falha no processamento: %w", context.Cause(ctx))
+}
+```
+
+### Usando callbacks para tratar um contexto cancelado
+
+> [!WARNING] Essa funcionalidade só está disponível a partir da versão 1.21 do Go
+
+A função `context.AfterFunc(ctx Context, f func())` recebe um context `ctx`, que
+ao ser cancelado executa a função `f`. Dessa forma, a função `f` é um
+[_callback_](https://en.wikipedia.org/wiki/Callback_(computer_programming))
+para quando um contexto for cancelado e pode ser útil quando o código em
+questão irá executar em paralelo, não precisa retornar um erro, mas precisa
+fazer algum tratamento mais complexo quando o contexto for cancelado.
+
+```go
+callback := func(){
+    //Essa função será executada quando o contexto for cancelado.
+}
+
+stop := context.AfterFunc(ctx, callback)
+defer stop()
+
+// processamento
+
+return nil
+
+```
+
+## Como cancelar contextos?
+
+Vimos, na sessão anterior, as opções que o pacote `context` oferece para tratar
+um cancelamento e, se você foi curioso ou curiosa e também deu uma olhada na própria
+definição da interface, possivelmente notou que não existe um método `Cancel()`
+ou algo parecido, ou seja, um contexto não tem capacidade de ativar um sinal
+de cancelamento para ele mesmo.
+
+### Porque os contextos não devem cancelar a si próprios
+
+Para explicar o motivo, vamos voltar ao exemplo do restaurante: imagine que o garçom
+ou outro cliente pudesse cancelar seu pedido, ou pior, todos os pedidos. Você
+também pode pensar em uma tarefa que inicia várias _goroutines_ em paralelo para
+realizar o download de vários arquivos, a exposição de uma forma de cancelar
+dentro do próprio contexto poderia possibilitar o cancelamento de outros
+downloads iniciados pela mesma tarefa, seria uma tragédia 😟.
+
+Logo, a existência da possibilidade de cancelar um contexto em qualquer escopo
+seria terrivelmente perigoso e poderia impactar diversos fluxos de forma
+imprevisível. Então, caso seja necessário ter um controle fino sobre o tempo de
+vida de um determinado fluxo da sua aplicação, a recomendação é criar uma nova
+instância do `context.Context` e o pacote `context` já oferece algumas formas
+para criar contextos, vamos dar uma olhada nelas?
 
 ## Criando novos contextos
 
-Atualmente, existem três formas de criar um novo contexto utilizando o pacote
-`context`, além da possibilidade de criar seu próprio contexto implementando a
-interface `context.Context`.
+Para os exemplos a seguir, decidi seguir a _vibe_ de restaurante e criei
+duas `structs`.
 
-### Com cancelamento
+A `restaurant` representando o próprio restaurante, com o metodo `order`
+para "receber" os pedidos e encaminhá-los a cozinha:
+
+```go
+type restaurant struct {
+    kitchen kitchen
+}
+
+func (r restaurant) order(ctx context.Context, dish string) {
+    fmt.Printf("restaurante: preparando o pedido %q\n", dish)
+    r.kitchen.cook(ctx, dish)
+    <-ctx.Done() // espera o contexto ser cancelado
+    fmt.Printf("restaurante: pedido %q cancelado: %s\n", dish, context.Cause(ctx))
+}
+```
+
+A outra, `kitchen`, representa a cozinha e tem o método `cook` representando o
+ato de cozinhar o prato:
+
+```go
+type kitchen struct{}
+
+func (k kitchen) cook(ctx context.Context, dish string) {
+    fmt.Printf("cozinha: fingindo que estamos fazendo %q\n", dish)
+    <-ctx.Done() // espera o contexto ser cancelado
+    fmt.Printf("cozinha: parando de fazer %q: %s\n", dish, context.Cause(ctx))
+}
+```
+
+Veja que estamos usando tanto o método `ctx.Done()`, como o `context.Cause(ctx)`
+que já falamos anteriormente.
+
+### Criando contextos com cancelamento
 
 A função `context.WithCancel` possui dois retornos. O primeiro é o próprio
 contexto, que deve ser repassado nas chamadas em que ele se faz necessário, já o
 segundo é uma função de cancelamento que, ao ser chamada, irá cancelar o
 contexto criado.
 
+> [!WARNING]
+> É sempre uma boa prática utilizar o `defer` nas funções de
+> cancelamento, pois ajuda a evitar o vazamento de _goroutines_. [Exemplo completo no Go Playground](https://go.dev/play/p/xfY8hceWaHC)
+
 ```go
-func contextWithCancel() {
+func main() {
+    iceCreamPlace := restaurant{kitchen: kitchen{}}
+
     ctx, cancel := context.WithCancel(context.Background())
     defer cancel()
+    dish := "sorvete de cebola"
+    fmt.Printf("cliente: pedindo %q\n", dish)
 
-    // processamento
+    go func() {
+        iceCreamPlace.order(ctx, dish)
+    }()
+
+    fmt.Println("cliente: esperando o pedido ficar pronto")
+    time.Sleep(1 * time.Second)
+    fmt.Printf("cliente: cancelando %q\n", dish)
+    cancel()
+    time.Sleep(1 * time.Second)
 }
 ```
 
-### Com deadline e timeout
+```text
+cliente: pedindo "sorvete de cebola"
+cliente: esperando o pedido ficar pronto
+restaurante: preparando o pedido "sorvete de cebola"
+cozinha: fingindo que estamos fazendo "sorvete de cebola"
+cliente: cancelando "sorvete de cebola"
+cozinha: parando de fazer "sorvete de cebola": context canceled
+restaurante: pedido "sorvete de cebola" cancelado: context canceled
+```
 
-O pacote `context` também oferece opções para criar contextos com uma data
-limite. A função `context.WithDeadline` recebe um `time.Time` e irá cancelar o
+Também é possível evidenciar a causa do cancelamento utilizando a função
+`context.WithCancelCause`. [Exemplo completo no Go Playground](https://go.dev/play/p/rUI_qSkZTsF)
+
+```go
+func main() {
+    iceCreamPlace := restaurant{kitchen: kitchen{}}
+
+    ctx, cancel := context.WithCancelCause(context.Background())
+    defer cancel(nil) // retorna o erro original: "context canceled"
+    dish := "sorvete de cebola"
+    fmt.Printf("cliente: pedindo %q\n", dish)
+
+    go func() {
+        iceCreamPlace.order(ctx, dish)
+    }()
+
+    fmt.Println("cliente: esperando o pedido ficar pronto")
+    time.Sleep(1 * time.Second)
+    cause := errors.New("cancelado pelo cliente")
+    cancel(cause)
+    time.Sleep(1 * time.Second)
+}
+```
+
+```text
+cliente: pedindo "sorvete de cebola"
+cliente: esperando o pedido ficar pronto
+restaurante: preparando o pedido "sorvete de cebola"
+cozinha: fingindo que estamos fazendo "sorvete de cebola"
+cozinha: parando de fazer "sorvete de cebola": cancelado pelo cliente
+restaurante: pedido "sorvete de cebola" cancelado: cancelado pelo cliente
+```
+
+### Criando contextos com prazo de validade
+
+Também existem opções para criar contextos com um prazo de
+validade, ou seja, os contextos serão automaticamente cancelados após o período
+informado. Existem duas funções para criar um contexto com prazo de validade:
+
+#### `context.WithDeadline`
+
+A `context.WithDeadline`, que recebe um `time.Time` e irá cancelar o
 contexto após o tempo informado.
 
-Já a função `context.WithTimeout` recebe um `time.Duration` e irá cancelar o
+```go
+deadline := time.Parse()
+ctx, cancel := context.WithDeadline(context.Background(), deadline)
+defer cancel()
+
+// processamento 
+```
+
+#### `context.WithTimeout`
+
+A `context.WithTimeout`, que recebe um `time.Duration` e irá cancelar o
 contexto após o **periodo** informado.
 
-### Com valores
+### Criando contexto que carregam valores
 
 Também existe a função `context.WithValue`, que permite a criação de um contexto
 com valores armazenados internamente. Recomendo **bastante cautela** ao utilizar
@@ -137,73 +366,17 @@ Pessoalmente não recomendo seguir por esse caminho, pois nesses meus quase 10
 anos de Go eu ainda não vi nenhum cenário que as interfaces fornecidas pela
 biblioteca padrão não foram suficientes.
 
-## Lidando com o cancelamento
+## Conclusão
 
-_Não, não estamos falando de redes sociais_ 🫠
+Talvez você já tenha lido a [documentação do pacote context](https://pkg.go.dev/context)
+anteriormente e sentido dificuldades em entender de quando e onde os contextos
+podem ou devem ser usados. Isso pode ter acontecido porque a documentação se
+preocupa em informar quais funcionalidades existem e não os casos de uso em que ela são
+aplicáveis. Espero que os exemplos usados nesse artigo tenham te ajudado a entender melhor esse tal de parâmetro `ctx` que as funções eventualmente precisam.
 
-A biblioteca padrão oferece três formas de tratar contextos cancelados:
+Não deixe de conferir o link com referências e material adicional mais abaixo.
 
-1. Verificar o erro retornado pelo `context.Err()`
-2. Escutar o canal `context.Done()`
-3. Implementar um callback e usar com o `context.AfterFunc()`
-
-### Verificando o context.Err()
-
-Essa abordagem é útil se você quiser verificar se o contexto já foi cancelado
-antes do processamento realmente acontecer, você pode simplesmente verificar se
-`ctx.Err() != nil`, a função retornara `nil` caso o contexto ainda não tenha
-sido cancelado.
-
-```go
-func longProcess(ctx context.Context) error {
-    if ctx.Err() != nil {
-        // o contexto foi cancelado, só vamos retornar um erro informando o motivo, ok? 👍
-        return fmt.Errorf("failure before start long process: %w", ctx.Err())
-    }
-
-    realLongProcess(ctx)
-
-    return nil 
-}
-```
-
-### Escutando o ctx.Done()
-
-A função `ctx.Done()` retorna um canal que informa quando o trabalho de um
-determinado contexto deve ser interrompido.
-
-```go
-func longProcess(ctx context.Context) error {
-    result := make(chan string, 1)
-
-    // Aqui usamos o select para escolher entre o resultado do processamento e o
-    // cancelamento do contexto, executando o código correspondente.
-    for{
-        select {
-            case m := <-readMessage():
-                // processa o resultado
-            case <-ctx.Done():
-                // tratamento para o cancelamento do contexto
-                return fmt.Errorf("failure during long process: %w", ctx.Err())
-        }
-    }
-}
-```
-
-### Usando o context.AfterFunc
-
-```go
-func longProcess(ctx context.Context) error {
-    stop := context.AfterFunc(ctx, func(){
-        // quando o contexto for cancelado, esse código será executado
-    })
-    defer stop()
-
-    // processamento
-
-    return nil
-}
-```
+Até uma próxima 👋!
 
 ## Referências e material adicional
 
@@ -213,5 +386,3 @@ func longProcess(ctx context.Context) error {
 - [Learn Go with tests: Contexts](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/context)
 - [The Complete Guide to Context in Golang: Efficient Concurrency Management](https://medium.com/@jamal.kaksouri/the-complete-guide-to-context-in-golang-efficient-concurrency-management-43d722f6eaea)
 - [Graceful Shutdown in Go: Practical Patterns](https://victoriametrics.com/blog/go-graceful-shutdown/index.html)
-
-Espero que tenha ajudado você e até uma próxima 👋.

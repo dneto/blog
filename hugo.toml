@@ -2,12 +2,15 @@ baseURL = 'https://dneto.me/'
 defaultContentLanguage = 'pt'
 languageCode = 'pt-BR'
 title = 'dneto.me'
-summaryLength = 150
+summaryLength = 100
 
 [markup]
 [markup.highlight]
-style = 'catppuccin-mocha'
+noClasses = false
 
 [markup.goldmark]
 [markup.goldmark.extensions]
 footnote = true
+
+[taxonomies]
+tag = 'tags'

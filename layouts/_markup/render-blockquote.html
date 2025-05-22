@@ -1,0 +1,40 @@
+{{ $icons := dict
+"caution" ":exclamation:"
+"important" ":information_source:"
+"note" "ph ph-info"
+"tip" "ph ph-lightbulb"
+"warning" "ph-fill ph-warning"
+"quote" "ph-fill ph-quotes"
+"comment" "ph-fill ph-chat"
+"translation" "ph ph-translate"
+"info" "ph ph-info"
+"analogy" "ph ph-brain"
+"melt" "ph-fill ph-smiley-melting"
+}}
+
+{{- $colors := dict
+"tip" "green"
+"warning" "yellow"
+"info" "blue"
+"analogy" "maroon"
+-}}
+
+{{ if eq .Type "alert" }}
+<div class="alert-container alert-{{ or (index $colors .AlertType) "default" }}">
+    <blockquote class="alert">
+        <p class="alert-heading">
+            <i class="{{index $icons .AlertType}} alert-icon"></i>
+            {{ with .AlertTitle }}
+            {{ . }}
+            {{ else }}
+            {{ or (lang.Translate .AlertType | title) }}
+            {{ end }}
+        </p>
+        {{ .Text }}
+    </blockquote>
+</div>
+{{ else }}
+<blockquote>
+    {{ .Text }}
+</blockquote>
+{{ end }}

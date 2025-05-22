@@ -1,0 +1,19 @@
+{{ define "title" }}
+{{ .Title }} - {{ .Site.Title }}
+{{ end }}
+{{ define "main" }}
+<div id="posts">
+    {{ range .Pages }}
+    <div>
+        {{ if eq .Type "posts" }}
+        <span>{{ time.Format "02/01/2006" .Date }}</span>
+        {{ end }}
+        <h1 class="title">
+            <a href="{{.RelPermalink}}">
+                {{if eq .Type "tags" }}# {{end}}{{ .LinkTitle }}
+            </a>
+        </h1>
+    </div>
+    {{end}}
+</div>
+{{ end }}

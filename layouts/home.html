@@ -5,11 +5,9 @@
 {{ define "main" }}
 {{ .Content }}
 {{ range site.RegularPages }}
-<div id="content">
-  <div id="preview">
-    {{ partial "title.html" . }}
-    {{ .Summary }}
-  </div>
+<div id="content" class="preview">
+  {{ partial "title.html" . }}
+  {{ .Summary }}
 </div>
 {{ end }}
 {{ end }}

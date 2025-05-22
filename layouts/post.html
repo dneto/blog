@@ -3,14 +3,9 @@
 {{ end }}
 {{ define "main" }}
 <div id="content">
-  <div>
     {{ partial "title.html" . }}
-    <div id="toc-in-content">
-      {{ .TableOfContents }}
-    </div>
     <div id="post">
       {{ .Content }}
     </div>
-  </div>
 </div>
 {{ end }}

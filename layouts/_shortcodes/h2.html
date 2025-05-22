@@ -1,0 +1,6 @@
+{{ $anchorized := .Get 1 }}
+
+<h2 id="{{ $anchorized }}">
+    <a href="#{{ $anchorized }}">#</a>
+    {{ $anchorized | safeHTML }}
+</h2>
