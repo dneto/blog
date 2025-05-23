@@ -13,66 +13,75 @@ Uma das responsabilidades que possuo onde trabalho altualmente é ensinar e
 orientar pessoas menos experientes e uma das principais dúvidas que recebo
 relacionadas a Go é sobre **contextos**.
 
-> [!MELT] Desabafo
+> [!QUOTE]
 > Mas eu não aguento mais passar isso em praticamente toda chamada que faço.\
 > Outras linguagens não têm isso, por que eu tenho que me preocupar?
 >
-> _- Pessoa desenvolvedora começando a aprender Go_
+> \- Pessoa desenvolvedora vendo contextos em todo lugar
 
-Para explicar sobre contextos, precisamos entender alguns conceitos antes
+Para entender a utilidade dos contextos, precisamos estar cientes de que a
+concorrência é uma realidade comum no desenvolvimento atual — e a forma como o
+Go lida com ela torna seu uso ainda menos burocrático. Para ilustrar isso, vou
+usar uma analogia:
 
 > [!ANALOGY] Analogia
->Imagine que você vai almoçar em um restaurante. Ao se sentar, escolhe um prato
->do cardápio, chama o garçom e faz seu pedido.
+> Imagine que você vai almoçar em um restaurante. Ao se sentar, escolhe um prato
+> do cardápio, chama o garçom e faz seu pedido.
 >
->O garçom anota o pedido e o envia para a cozinha, onde os cozinheiros começam a prepará-lo.
+> O garçom anota o pedido e o envia para a cozinha, onde os cozinheiros começam a prepará-lo.
 >
->Agora, imagine que, no meio disso, você recebe uma ligação urgente e precisa
->sair imediatamente. Então, você cancela o pedido.
+> Agora, imagine que, no meio disso, você recebe uma ligação urgente e precisa
+> sair imediatamente. Então, você cancela o pedido.
 >
->O que acontece com o prato que estava sendo preparado? Isso depende do
->funcionamento do restaurante: ele pode descartar tudo o que já foi feito, ou
->tentar reaproveitar parte dos ingredientes que ainda não estragaram.
+> O que acontece com o prato que estava sendo preparado? Isso depende do
+> funcionamento do restaurante: ele pode descartar tudo o que já foi feito, ou
+> tentar reaproveitar parte dos ingredientes que ainda não estragaram.
 
-Assim como o restaurante precisou fazer algo com o pedido cancelado, existem
-situações em que precisamos saber quando uma tarefa precisa ser interrompida.
-Você, após perceber que precisava sair e não voltaria, cancelou o pedido com o
-garçom, que avisou a cozinha.
+Assim como o restaurante precisou lidar com o pedido cancelado, em sistemas
+concorrentes também existem situações em que precisamos interromper uma tarefa
+em andamento.
 
-Algumas vezes uma sinalização simples pode servir, mas em outros casos, como
-esse do restaurante, o cancelamento precisa ser propagado e pode ter algumas
-consequências.
+No exemplo, ao perceber que precisava sair e não voltaria, você cancelou o
+pedido com o garçom — que então avisou a cozinha.
 
-## Interropendo fluxos
+Às vezes, uma sinalização simples pode ser suficiente. Mas, em outros casos,
+como no restaurante, o cancelamento precisa ser propagado por diferentes partes
+do sistema e pode ter consequências importantes.
+
+## Tempo e ciclo de vida das tarefas
 
 Além do exemplo do restaurante, podemos pensar em situações mais próximas da
-realidade de um desenvolvedor: pode ser o download de um arquivo
-grande, uma requisição para uma API REST, uma consulta ao banco de dados ou a
-execução de qualquer tarefa que pode demorar muito tempo.
+realidade de um desenvolvedor: pode ser o download de um arquivo grande, uma
+requisição para uma API REST, uma consulta ao banco de dados ou a execução de
+qualquer tarefa que pode levar muito tempo.
 
-Como você faria pra cancelar algo, se fosse necessário? E como faria pra
-notificar esse cancelamento em efeito cascata?
+Como você faria para cancelar algo, se fosse necessário? E como notificaria esse
+cancelamento em efeito cascata?
 
-Cada linguagens, biblioteca ou framework oferece sua solução para
-lidar tanto com o ciclo de vida, como com o tempo de vida dos fluxos. Os
-desenvolvedores do Go enxergaram essa necessidade é e aí que o pacote `context`
-entra em ação.
+Cada linguagem, biblioteca ou framework oferece sua própria solução para lidar
+tanto com o ciclo de vida quanto com o tempo de vida de fluxos e operações. Os
+desenvolvedores do Go enxergaram essa necessidade — e é aí que entra o pacote
+`context`.
 
-Mas antes de começar a falar qualquer coisa sobre os contextos, é importante
-lembrar que Go é uma linguagem criada com a filosofia de que deixar as coisas
-_**explícitas**_ é melhor do que ter tudo _**implícito**_.
+Mas antes de falar sobre contextos, vale lembrar: o Go foi criado com a
+filosofia de que **ser explícito é melhor do que esconder complexidade por trás de
+abstrações implícitas**.
 
 >[!QUOTE]
 > Explícito é melhor que ímplicito
 >
 > \- Item 2 do [Zen of Python](https://peps.python.org/pep-0020/)
 
-_Apesar das coisas nem sempre serem tão explícitas assim no Python, esse é um bom conselho a ser seguido para qualquer linguagem. Inclusive, recomendo também a leitura do [Zen of Go](https://dave.cheney.net/2020/02/23/the-zen-of-go)_
+Apesar das coisas nem sempre serem tão explícitas assim no Python, esse é um bom
+conselho a ser seguido para qualquer linguagem. Inclusive, recomendo também a
+leitura do [Zen of Go](https://dave.cheney.net/2020/02/23/the-zen-of-go)
 
 ## O pacote `context`
 
 O pacote `context` oferece um padrão para tratar esses cenários em que um sinal
-de cancelamento precisa ser propagado dentro dos limites do código, possibilitando o encerramento de forma graciosa, ou _gracious shutdown_, do fluxo.
+de cancelamento precisa ser propagado dentro dos limites do código,
+possibilitando o encerramento de forma graciosa, ou _gracious shutdown_, do
+fluxo.
 
 ### A interface `context.Context`
 

@@ -1,17 +1,20 @@
 <div id="title">
     <div id="tags">
-        <ul>
-            <li>{{ time.Format "02 de January de 2006" .Date }}</li>
-            <li>{{ .ReadingTime }} minutos</li>
-            <li>{{ .WordCount}} palavras</li>
-            {{range .Params.Tags}}
-            <li><a href="/tags/{{.}}">#{{ . }}</a></li>
-            {{ end }}
-        </ul>
+
     </div>
     <h1 class="title">
         <a href="{{.RelPermalink}}">
             {{ .LinkTitle }}
         </a>
     </h1>
+    <div id="tags">
+        <ul>
+            <li><i class="ph-fill ph-calendar"></i> {{ time.Format "02 de January de 2006" .Date }}</li>
+            <li><i class="ph-fill ph-clock"></i> {{ .ReadingTime }} minutos</li>
+            <li><i class="ph-fill ph-book-open-text"></i> {{ .WordCount}} palavras</li>
+            {{range .Params.Tags}}
+            <li class="tag"><a href="/tags/{{.}}">{{ . }}</a></li>
+            {{ end }}
+        </ul>
+    </div>
 </div>
