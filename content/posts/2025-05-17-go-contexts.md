@@ -20,9 +20,16 @@ relacionadas a Go é sobre **contextos**.
 > \- Pessoa desenvolvedora vendo contextos em todo lugar
 
 Para entender a utilidade dos contextos, precisamos estar cientes de que a
-concorrência é uma realidade comum no desenvolvimento atual — e a forma como o
-Go lida com ela torna seu uso ainda menos burocrático. Para ilustrar isso, vou
-usar uma analogia:
+concorrência é uma realidade comum no desenvolvimento atual. Novas tarefas podem
+surgir das mais diversas formas: processos, threads, goroutines
+(ou [green threads](https://en.wikipedia.org/wiki/Green_thread)).
+
+Mas, além de iniciar essas tarefas, é fundamental ter controle sobre elas,  
+especialmente para saber quando e como interrompê-las caso algo não saia como  
+esperado, evitando que fiquem rodando sem necessidade e/ou causem problemas no  
+sistema.
+
+Para ilustrar isso, vou usar uma analogia:
 
 > [!ANALOGY] Analogia
 > Imagine que você vai almoçar em um restaurante. Ao se sentar, escolhe um prato
