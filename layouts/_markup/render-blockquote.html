@@ -22,14 +22,14 @@
 {{ if eq .Type "alert" }}
 <div class="alert-container alert-{{ or (index $colors .AlertType) "default" }}">
     <blockquote class="alert">
-        <p class="alert-heading">
+        <div class="alert-heading">
             <i class="{{index $icons .AlertType}} alert-icon"></i>
             {{ with .AlertTitle }}
             {{ . }}
             {{ else }}
             {{ or (lang.Translate .AlertType | title) }}
             {{ end }}
-        </p>
+        </div>
         {{ .Text }}
     </blockquote>
 </div>

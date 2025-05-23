@@ -1,10 +1,10 @@
 
 <div class="alert-container alert-lavender">
     <blockquote class="alert">
-        <p class="alert-heading">
+        <div class="alert-heading">
             <i class="ph ph-code-simple alert-icon"></i>
             {{lang.Translate "code" | title}}
-        </p>
+        </div>
         {{ $result := transform.HighlightCodeBlock . }}
         {{ $result.Wrapped }}
     </blockquote>
