@@ -107,7 +107,6 @@ div#toc-in-content {
   margin-top: 16px;
 
   .alert-icon {
-    margin-right: 0.1ch;
     font-size: calc(var(--text-font-size) * 1) !important;
 
   }
@@ -119,6 +118,7 @@ div#toc-in-content {
     margin: 0;
     color: var(--alert-color) !important;
     align-items: center;
+    gap: 0.8ch
   }
 
   p {
@@ -502,7 +502,8 @@ div#avatar {
 }
 
 strong {
-  font-weight: 700;
+  font-weight:500;
+  color: var(--ctp-text)
 }
 
 p {
@@ -654,7 +655,7 @@ div#posts {
 
  @media screen and (max-width: 1250px) {
   :root {
-    --title-font-size: var(--heading-font-size);
+    --title-font-size: calc(var(--heading-font-size)*1.2);
     --space-md: 0.5rem;
     --tags-font-size: var(--text-font-size)
   }
