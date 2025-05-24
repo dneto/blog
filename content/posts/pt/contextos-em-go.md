@@ -142,7 +142,16 @@ para criar contextos — vamos dar uma olhada nelas?
 
 ## Criando novos contextos
 
-Para os exemplos a seguir, decidi seguir a _vibe_ de restaurante e criei
+É importante lembrar que, exceto pelos métodos `context.Background()` e
+`context.TODO()`, todos as formas de criação de um contexto exigem um _contexto-pai_.
+
+Sempre que um contexto-pai for cancelado, todos seus filhos também serão cancelados.
+
+Nessa seção teremos alguns exemplos mais completos que irão utilizar o código abaixo, esses exemplos também contam com um link para execução no [Go Playground](https://play.golang.org).
+
+### Estrutura dos exemplos
+
+Para alguns dos exemplos seguir, decidi seguir a _vibe_ de restaurante e criei
 duas `structs`.
 
 A `restaurant` representando o próprio restaurante, com o metodo `order`
@@ -176,7 +185,103 @@ func (k kitchen) cook(ctx context.Context, dish string) {
 
 Note que nesse exemplo estamos usando o método `ctx.Done()`, e a função `context.Cause(ctx)`, vamos falar mais sobre elas na seção [lidando com o cancelamento](#lidando-com-o-cancelamento)
 
-### Criando contextos com cancelamento — `context.WithCancel`
+### Sem possibilidade de cancelamento
+
+Decidi organizar as funções de criação de contexto pela possibilidade ou não de
+cancelamento. Vamos iniciar pelas formas que não oferecem nenhum tipo de
+mecanismo para cancelamento.
+
+#### Criando contextos básicos — `context.Background`
+
+O `context.Background` cria um novo contexto vazio, ou seja, não possui prazos, nem guarda valores — e não pode ser cancelado. Pode ser criado no início da aplicação, ou em testes, por exemplo.
+
+```go
+ctx := context.Background()
+```
+
+#### Criando contextos provisórios - `context.TODO`
+
+O `context.TODO` pode ser usado quando não se tem certeza de qual outra opção
+deve ser usada. A intenção dele é ser apenas um _placeholder_ e deve ser substituído.
+
+Assim como o `context.Background`, ele não pode ser cancelado.
+
+```go
+ctx := context.TODO()
+```
+
+#### Contextos que carregam valores — `context.WithValue`
+
+Também existe a função `context.WithValue`, que permite a criação de um contexto
+com valores armazenados internamente.
+
+[Exemplo completo no Go Playground](https://go.dev/play/p/ks4RjpRvYKM)
+
+```go
+func main() {
+    iceCreamPlace := restaurant{kitchen: kitchen{}}
+
+    // Cria um contexto com valor
+    ctx := context.WithValue(context.Background(), "orderId", "1")
+    dish := "sorvete de cebola"
+    fmt.Printf("cliente: pedindo %q\n", dish)
+
+    iceCreamPlace.order(ctx, dish)
+}
+```
+
+```text
+cliente: pedindo "sorvete de cebola"
+restaurante: recebendo pedido de "sorvete de cebola"
+cozinha: preparando "sorvete de cebola" (pedido #1)
+```
+
+> [!CAUTION] Atenção
+> Recomendo **bastante cautela** ao utilizar
+> contextos dessa forma, embora seja muito útil para passar agentes de métricas,
+> tracing ou dados de um request — como um request id — entre as diferentes camadas,
+> o abuso dessa opção pode causar problemas de clareza no código.
+>
+> Essa funcionalidade não deve ser utilizada como um dicionário genérico global.
+
+#### Criando contextos derivados sem cancelamento — `context.WithoutCancel`
+
+> [!WARNING] Disponível a partir do Go 1.21
+
+O `context.WithoutCancel` cria um novo contexto a partir de um contexto-pai, mas continuará ativo, mesmo que o original tenha sido cancelado.
+
+[Exemplo completo no Go Playground](https://go.dev/play/p/74cJvUW3q4F)
+
+```go
+func main() {
+    iceCreamPlace := restaurant{kitchen: kitchen{}}
+
+    // Cria um contexto com cancelamento
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+    // Cria um contexto derivado que ignora o cancelamento do pai
+    ctx2 := context.WithoutCancel(ctx)
+
+    dish := "sorvete de cebola"
+    fmt.Printf("cliente: pedindo %q\n", dish)
+
+    go func() {
+        iceCreamPlace.order(ctx2, dish)
+    }()
+
+    fmt.Println("cliente: esperando o pedido ficar pronto")
+    time.Sleep(1 * time.Second)
+    fmt.Printf("cliente: cancelando %q\n", dish)
+    cancel() // Cancela o contexto pai, mas ctx2 não será cancelado
+
+    time.Sleep(2 * time.Second)
+    fmt.Printf("cliente: verificando status do pedido %q\n", dish)
+}
+```
+
+### Com possibilidade de cancelamento
+
+#### Criando contextos com cancelamento — `context.WithCancel` e `context.WithCancelCause`
 
 A função `context.WithCancel` possui dois retornos. O primeiro é o próprio
 contexto, que deve ser repassado nas chamadas em que ele se faz necessário, já o
@@ -255,16 +360,10 @@ cozinha: parando de fazer "sorvete de cebola": cancelado pelo cliente
 restaurante: pedido "sorvete de cebola" cancelado: cancelado pelo cliente
 ```
 
-### Criando contextos com prazos de validade
-
-Também existem opções para criar contextos com um prazo de
-validade, ou seja, eles serão automaticamente cancelados após o período
-de tempo informado.
-
-#### Com prazo de validade absoluto — `context.WithDeadline`
+#### Com prazo de validade absoluto — `context.WithDeadline` e `context.WithDeadlineCause`
 
 A `context.WithDeadline`, que recebe um `time.Time` e irá cancelar o
-contexto após o tempo informado.
+contexto automaticamente após **a data** informada.
 
 [Exemplo completo no Go Playground](https://go.dev/play/p/7MiJmFFW1wl)
 
@@ -327,7 +426,7 @@ restaurante: pedido "sorvete de cebola" cancelado: hora de levar minha avó pra 
 cliente: verificando status do pedido "sorvete de cebola"
 ```
 
-#### Com prazo de validade relativo — `context.WithTimeout`
+#### Com prazo de validade relativo — `context.WithTimeout` e `context.WithTimeoutCause`
 
 A `context.WithTimeout`, que recebe um `time.Duration` e irá cancelar o
 contexto após o **período** informado.
@@ -401,41 +500,7 @@ cliente: verificando status do pedido "sorvete de cebola"
 
 >[!WARNING] Note que a saída é igual a do exemplo com `context.WithDeadline`
 
-### Contextos que carregam valores — `context.WithValue`
-
-Também existe a função `context.WithValue`, que permite a criação de um contexto
-com valores armazenados internamente.
-
-[Exemplo completo no Go Playground](https://go.dev/play/p/ks4RjpRvYKM)
-
-```go
-func main() {
-    iceCreamPlace := restaurant{kitchen: kitchen{}}
-
-    // Cria um contexto com valor
-    ctx := context.WithValue(context.Background(), "orderId", "1")
-    dish := "sorvete de cebola"
-    fmt.Printf("cliente: pedindo %q\n", dish)
-
-    iceCreamPlace.order(ctx, dish)
-}
-```
-
-```text
-cliente: pedindo "sorvete de cebola"
-restaurante: recebendo pedido de "sorvete de cebola"
-cozinha: preparando "sorvete de cebola" (pedido #1)
-```
-
-> [!CAUTION] Atenção
-> Recomendo **bastante cautela** ao utilizar
-> contextos dessa forma, embora seja muito útil para passar agentes de métricas e
-> tracing ou dados de um request, como um request id, entre as diferentes camadas,
-> o abuso dessa opção pode causar problemas de clareza no código.
->
-> Essa funcionalidade não deve ser utilizada como um dicionário genérico global.
-
-### Crie o seu próprio
+### Criando seu próprio contexto
 
 Por se tratar de uma interface, você pode criar sua própria implementação.
 Pessoalmente não recomendo seguir por esse caminho, pois nesses meus quase 10
@@ -477,7 +542,7 @@ if ctx.Err() != nil {
 
 A partir do [Go 1.21](https://tip.golang.org/doc/go1.21#contextpkgcontext)
 existe a opção de associar um `error` como causa do cancelamento de um contexto
-que podemos obter utilizando a [função `context.Cause`](https://pkg.go.dev/context#Cause).
+e que pode der obtido utilizando a [função `context.Cause`](https://pkg.go.dev/context#Cause).
 
 Caso o contexto tenha sido cancelado e exista uma causa _não-nula_, o valor retornado será o erro enviado como causa no momento do cancelamento. Já, se não existir uma causa específica, o valor será o mesmo da chamada `ctx.Err()`, que vimos anteriormente.
 
@@ -495,10 +560,6 @@ Além da verificação ativa utilizando o `ctx.Err()`, é possível receber um
 
 Quando a chamada `<-ctx.Done()` é feita, o código aguarda o recebimento através
 do canal, bloqueando a execução da _goroutine_ até receber algum conteúdo.
-
-```go
-<-ctx.Done()
-```
 
 Pela natureza _bloqueante_ da chamada, geralmente usamos uma cláusula `select`
 para escolher entre o resultado do `ctx.Done()` e algum outro canal, como no
@@ -529,19 +590,42 @@ ao ser cancelado executa a função `f`. Dessa forma, a função `f` age como um
 acionado no cancelamento, útil em tarefas paralelas que não precisam retornar um
 erro — mas precisam fazer algum tratamento quando o contexto for cancelado.
 
+Essa chamada retorna uma `func() bool`  que pode ser chamada para desfazer a
+associação dela com o contexto `ctx`, fazendo com que ela não seja mais chamada caso o contexto seja cancelado. Ela irá retornar `true` .
+
+[Exemplo completo no Go Playground](https://go.dev/play/p/1H1eXBy4uAV)
+
 ```go
-callback := func(){
-    // Essa função será executada automaticamente quando o contexto for
-    // cancelado.
+package main
+
+import (
+    "context"
+    "fmt"
+    "time"
+)
+
+func main() {
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    // Callback que será chamado quando o contexto for cancelado
+    callback := func() {
+        fmt.Println("callback: contexto cancelado!")
+    }
+    stop := context.AfterFunc(ctx, callback)
+    defer stop()
+
+    callback2 := func() {
+        fmt.Println("callback2: não serei executado")
+    }
+    stop2 := context.AfterFunc(ctx, callback2)
+    fmt.Println("Conseguimos cancelar o callback2?", stop2())
+    fmt.Println("Conseguimos cancelar o callback2?", stop2(), "(já está cancelado)")
+
+    go cancel()
+
+    time.Sleep(1 * time.Second) // aguardando callbacks serem executados
 }
-
-stop := context.AfterFunc(ctx, callback)
-defer stop()
-
-// processamento
-
-return nil
-
 ```
 
 ## Referências e material adicional
@@ -566,7 +650,6 @@ prático em que elas se aplicam.
 Com esse artigo, foquei em tentar introduzir o tema com alguns exemplos práticos
 e analogias — e espero que isso tenha te ajudado a entender melhor sobre o tema.
 
-Caso tenha alguma dúvida ou sugestão, minhas links de contato estão em links
-estão no topo da página.
+Caso tenha alguma dúvida ou sugestão, meus links de contato estão no topo da página.
 
 Até uma próxima 👋!

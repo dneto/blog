@@ -3,7 +3,7 @@
     <blockquote class="alert">
         <div class="alert-heading">
             <i class="ph ph-code-simple alert-icon"></i>
-            {{lang.Translate "code" | title}}
+            {{.Type | title}}
         </div>
         {{ $result := transform.HighlightCodeBlock . }}
         {{ $result.Wrapped }}
