@@ -19,7 +19,7 @@ relacionadas a Go é sobre os contextos.
 >
 > \- Pessoa desenvolvedora vendo contextos em todo lugar
 
-Para entender a utilidade dos contextos, precisamos estar cientes de que a
+Para entender a utilidade dos contextos, precisamos estar cientes de que
 [concorrência](https://en.wikipedia.org/wiki/Concurrency_(computer_science))
 é algo comum no desenvolvimento atual, **mesmo que não percebamos**.
 
@@ -29,7 +29,7 @@ Novas tarefas podem surgir das **mais diversas formas**:
 (ou [green threads](https://en.wikipedia.org/wiki/Green_thread)). Além de
 surgir, elas também podem — **e serão** — interrompidas.
 
-O Go nos oferece uma forma de sinalizar que um conjunto de tarefas precisa ser cancelado e também de tratar esse sinal no código do nosso sistema.
+O Go nos oferece uma forma de sinalizar que um conjunto de tarefas precisa ser cancelado e também de tratar esse sinal no código de um sistema.
 
 ## Interrupções no dia a dia
 
