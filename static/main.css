@@ -92,12 +92,12 @@ div#toc-in-content {
   font-weight: 500;
   letter-spacing: 0.025ch;
 
-  h2 {
-    padding: 0;
-    margin: 0;
-    font-family: var(--heading-font-family);
-    font-size: calc(var(--text-font-size) * 1.5);
-    line-height: calc(var(--heading-font-line-height) * 0.85);
+  div.header {
+    display: flex;
+    align-items: center;
+    gap: 0.5ch;
+    font-size: calc(var(--text-font-size)*1.2);
+    cursor: pointer;
   }
 }
 
@@ -111,7 +111,7 @@ div#toc-in-content {
 
   }
 
- & div.alert-heading {
+  & div.alert-heading {
     font-weight: 500;
     display: flex;
     padding: 0;
@@ -204,13 +204,17 @@ div#toc-in-content {
 nav#TableOfContents {
   font-weight: 200;
   font-size: calc(var(--text-font-size));
+  display: none;
 
-  ul {
+  ol {
     margin: 0;
     padding: 0;
-    list-style-type: none;
+    counter-reset: item;
+
 
     li {
+      display: block;
+
       a {
         color: var(--text-color);
         text-decoration: none;
@@ -222,9 +226,15 @@ nav#TableOfContents {
         text-decoration-thickness: 0.1rem;
       }
 
-      ul {
-        padding: 0;
-        padding-left: 1rem;
+      &:before {
+        content: counters(item, ".") " ";
+        counter-increment: item;
+        color: var(--ctp-text);
+        font-weight: 500;
+      }
+
+      ol {
+        padding-left: 2ch;
       }
     }
   }
@@ -475,6 +485,7 @@ div#content {
   h3,
   h4 {
     overflow-wrap: anywhere;
+
     code {
       font-size: calc(var(--heading-font-size) * 0.8);
       font-weight: var(--heading-font-weight);
@@ -502,7 +513,7 @@ div#avatar {
 }
 
 strong {
-  font-weight:500;
+  font-weight: 500;
   color: var(--ctp-text)
 }
 
@@ -513,7 +524,7 @@ p {
 
 div#tags {
   margin: 0;
-  margin-bottom: 2rem;
+  margin-bottom: 0.8rem;
   color: var(--tag-color);
   font-weight: 400;
   font-family: var(--tags-font-family);
@@ -653,14 +664,14 @@ div#posts {
   }
 }
 
- @media screen and (max-width: 1250px) {
+@media screen and (max-width: 1250px) {
   :root {
     --title-font-size: calc(var(--heading-font-size)*1.2);
     --space-md: 0.5rem;
     --tags-font-size: var(--text-font-size)
   }
 
- /* div#content p code {
+  /* div#content p code {
     font-size: 1.3rem;
   }
 
@@ -674,7 +685,7 @@ div#posts {
         line-height: 1.8rem;
       }
     }
-  } */ 
+  } */
 
   div#main {
     max-width: 100vw;

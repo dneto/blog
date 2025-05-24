@@ -63,7 +63,7 @@ andamento.
 No exemplo, você percebeu que precisava sair e não voltaria, então cancelou
 o pedido com o garçom — que, por sua vez, comunicou o cancelamento à cozinha.
 
-## O que isso tem a ver com meu código?
+### O que isso tem a ver com meu código?
 
 Além do exemplo do restaurante, podemos pensar em situações mais próximas da
 realidade de quem desenvolve: pode ser o download de um arquivo grande, uma
@@ -120,13 +120,12 @@ Vamos começar olhando a [documentação da interface `context.Context`](https:/
 
 ### Como cancelar contextos?
 
-Vimos, na seção anterior, as opções que o pacote `context` oferece para tratar
-um cancelamento e, se você foi curioso ou curiosa e também deu uma olhada na
-própria definição da interface, possivelmente notou que não existe um método
-`Cancel()` ou algo parecido. Ou seja, um contexto não tem capacidade de ativar
-um sinal de cancelamento para ele mesmo.
+Se você foi curioso ou curiosa e também deu uma olhada na própria definição da
+interface, possivelmente notou que não existe um método `Cancel()` ou algo
+parecido. Ou seja, um contexto não tem capacidade de ativar um sinal de
+cancelamento para ele mesmo.
 
-### Por que os contextos não devem cancelar a si próprios?
+### Por que os contextos não podem cancelar a si próprios?
 
 Para explicar o motivo, vamos voltar ao exemplo do restaurante: imagine que o
 garçom ou outro cliente pudesse cancelar seu pedido, ou pior, todos os pedidos.
@@ -141,8 +140,6 @@ imprevisível. Então, caso seja necessário ter um controle fino sobre o tempo 
 vida de um determinado fluxo da sua aplicação, a recomendação é criar uma nova
 instância do `context.Context`. O pacote `context` já oferece algumas formas
 para criar contextos — vamos dar uma olhada nelas?
-
-A biblioteca padrão oferece algumas formas de tratar contextos cancelados:
 
 ## Criando novos contextos
 
@@ -178,10 +175,9 @@ func (k kitchen) cook(ctx context.Context, dish string) {
 }
 ```
 
-Veja que estamos usando tanto o método `ctx.Done()`, como o `context.Cause(ctx)`
-que já falamos anteriormente.
+Note que nesse exemplo estamos usando o método `ctx.Done()`, e a função `context.Cause(ctx)`, vamos falar mais sobre elas na seção [lidando com o cancelamento](#lidando-com-o-cancelamento)
 
-### Criando contextos com cancelamento
+### Criando contextos com cancelamento — `context.WithCancel`
 
 A função `context.WithCancel` possui dois retornos. O primeiro é o próprio
 contexto, que deve ser repassado nas chamadas em que ele se faz necessário, já o
@@ -190,7 +186,9 @@ contexto criado.
 
 > [!WARNING]
 > É sempre uma boa prática utilizar o `defer` nas funções de
-> cancelamento, pois ajuda a evitar o vazamento de _goroutines_. [Exemplo completo no Go Playground](https://go.dev/play/p/xfY8hceWaHC)
+> cancelamento, pois ajuda a evitar o vazamento de _goroutines_.
+
+[Exemplo completo no Go Playground](https://go.dev/play/p/xfY8hceWaHC)
 
 ```go
 func main() {
@@ -224,7 +222,9 @@ restaurante: pedido "sorvete de cebola" cancelado: context canceled
 ```
 
 Também é possível evidenciar a causa do cancelamento utilizando a função
-`context.WithCancelCause`. [Exemplo completo no Go Playground](https://go.dev/play/p/rUI_qSkZTsF)
+`context.WithCancelCause`.
+
+[Exemplo completo no Go Playground](https://go.dev/play/p/rUI_qSkZTsF)
 
 ```go
 func main() {
@@ -256,31 +256,122 @@ cozinha: parando de fazer "sorvete de cebola": cancelado pelo cliente
 restaurante: pedido "sorvete de cebola" cancelado: cancelado pelo cliente
 ```
 
-### Criando contextos com prazo de validade
+[Exemplo completo no Go Playground](https://go.dev/play/p/QkrGwWJ9H14)
+
+```go
+func main() {
+    iceCreamPlace := restaurant{kitchen: kitchen{}}
+
+    // Define um deadline para 2 segundos no futuro
+    deadline := time.Now().Add(2 * time.Second)
+    cause := errors.New("o freezer parou de funcionar")
+    ctx, cancel := context.WithDeadlineCause(context.Background(), deadline, cause)
+    defer cancel()
+    dish := "sorvete de cebola"
+    fmt.Printf("cliente: pedindo %q\n", dish)
+
+    go func() {
+        iceCreamPlace.order(ctx, dish)
+    }()
+
+    fmt.Println("cliente: esperando o pedido ficar pronto")
+    time.Sleep(3 * time.Second) // espera mais do que o deadline
+    fmt.Printf("cliente: verificando status do pedido %q\n", dish)
+}
+```
+
+```text
+cliente: pedindo "sorvete de cebola"
+cliente: esperando o pedido ficar pronto
+restaurante: preparando o pedido "sorvete de cebola"
+cozinha: fingindo que estamos fazendo "sorvete de cebola"
+cozinha: parando de fazer "sorvete de cebola": o freezer parou de funcionar
+restaurante: pedido "sorvete de cebola" cancelado: o freezer parou de funcionar
+cliente: verificando status do pedido "sorvete de cebola"
+```
+
+### Criando contextos com prazos de validade
 
 Também existem opções para criar contextos com um prazo de
 validade, ou seja, os contextos serão automaticamente cancelados após o período
 informado. Existem duas funções para criar um contexto com prazo de validade:
 
-#### `context.WithDeadline`
+#### Com prazos de validade absolutos — `context.WithDeadline`
 
 A `context.WithDeadline`, que recebe um `time.Time` e irá cancelar o
 contexto após o tempo informado.
 
-```go
-deadline := time.Now().Add(2 * time.Second)
-ctx, cancel := context.WithDeadline(context.Background(), deadline)
-defer cancel()
+[Exemplo completo no Go Playground](https://go.dev/play/p/7MiJmFFW1wl)
 
-// processamento
+```go
+func main() {
+    iceCreamPlace := restaurant{kitchen: kitchen{}}
+
+    // Define um deadline para 2 segundos no futuro
+    deadline := time.Now().Add(2 * time.Second)
+    ctx, cancel := context.WithDeadline(context.Background(), deadline)
+    defer cancel()
+    dish := "sorvete de cebola"
+    fmt.Printf("cliente: pedindo %q\n", dish)
+
+    go func() {
+        iceCreamPlace.order(ctx, dish)
+    }()
+
+    fmt.Println("cliente: esperando o pedido ficar pronto")
+    time.Sleep(3 * time.Second) // espera mais do que o deadline
+    fmt.Printf("cliente: verificando status do pedido %q\n", dish)
+}
 ```
 
-#### `context.WithTimeout`
+```text
+cliente: pedindo "sorvete de cebola"
+cliente: esperando o pedido ficar pronto
+restaurante: preparando o pedido "sorvete de cebola"
+cozinha: fingindo que estamos fazendo "sorvete de cebola"
+cozinha: parando de fazer "sorvete de cebola": context deadline exceeded
+restaurante: pedido "sorvete de cebola" cancelado: context deadline exceeded
+cliente: verificando status do pedido "sorvete de cebola"
+```
+
+#### Com prazo de validade relativo — `context.WithTimeout`
 
 A `context.WithTimeout`, que recebe um `time.Duration` e irá cancelar o
 contexto após o **periodo** informado.
 
-### Criando contexto que carregam valores
+```go
+func main() {
+    iceCreamPlace := restaurant{kitchen: kitchen{}}
+
+    // Define um timeout de 2 segundos
+    ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+    defer cancel()
+    dish := "sorvete de cebola"
+    fmt.Printf("cliente: pedindo %q\n", dish)
+
+    go func() {
+        iceCreamPlace.order(ctx, dish)
+    }()
+
+    fmt.Println("cliente: esperando o pedido ficar pronto")
+    time.Sleep(3 * time.Second) // espera mais do que o timeout
+    fmt.Printf("cliente: verificando status do pedido %q\n", dish)
+}
+```
+
+```text
+cliente: pedindo "sorvete de cebola"
+cliente: esperando o pedido ficar pronto
+restaurante: preparando o pedido "sorvete de cebola"
+cozinha: fingindo que estamos fazendo "sorvete de cebola"
+cozinha: parando de fazer "sorvete de cebola": context deadline exceeded
+restaurante: pedido "sorvete de cebola" cancelado: context deadline exceeded
+cliente: verificando status do pedido "sorvete de cebola"
+```
+
+>[!WARNING] Note que a saída é igual ao do `context.WithDeadline`
+
+### Contextos que carregam valores — `context.WithValue`
 
 Também existe a função `context.WithValue`, que permite a criação de um contexto
 com valores armazenados internamente. Recomendo **bastante cautela** ao utilizar
@@ -299,15 +390,12 @@ biblioteca padrão não foram suficientes.
 
 >[!COMMENT] _Não, não estamos falando de redes sociais_
 
-
-### Verificando se o contexto já foi cancelado
-
 Você pode ativamente verificar se o contexto já foi cancelado, essa abordagem é
 útil para impedir que o fluxo prossiga. A forma mais comum é realizar a
 verificação ao início da função, mas em alguns momentos pode ser importante
 verificar ao final, para garantir que o fluxo não irá continuar.
 
-#### Usando `ctx.Err()`
+### Verificando se o contexto já foi cancelado — `ctx.Err`
 
 Você pode simplesmente verificar se retorno de `ctx.Err()` é _não-nulo_. A
 função retornara `nil` caso o contexto ainda não tenha sido cancelado e algum
@@ -327,7 +415,7 @@ if ctx.Err() != nil {
 }
 ```
 
-#### Identificando a causa do cancelamento
+### Identificando a causa do cancelamento — `context.Cause`
 
 > [!WARNING] Disponível a partir do Go 1.21
 
@@ -343,7 +431,7 @@ if ctx.Err() != nil {
 }
 ```
 
-### Escutando o sinal de cancelamento
+### Escutando o sinal de cancelamento — `ctx.Done`
 
 Além da verificação ativa utilizando o `ctx.Err()`, é possível receber um
 `channel` que informa o cancelamento através da chamada `ctx.Done()`.
@@ -374,7 +462,7 @@ select{
 }
 ```
 
-### Usando callbacks para tratar um contexto cancelado
+### Usando callbacks para tratar um contexto cancelado — `context.AfterFunc`
 
 > [!WARNING] Disponível a partir do Go 1.21
 

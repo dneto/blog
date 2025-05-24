@@ -3,9 +3,15 @@
 {{ end }}
 {{ define "main" }}
 <div id="content">
-    {{ partial "title.html" . }}
-    <div id="post">
-      {{ .Content }}
+  {{ partial "title.html" . }}
+  <div id="toc-in-content">
+    <div class="header collapsible">
+      <i class="ph-bold ph-list-numbers"></i> <strong>Sumário</strong>
     </div>
+    {{.TableOfContents}}
+  </div>
+  <div id="post">
+    {{ .Content }}
+  </div>
 </div>
 {{ end }}

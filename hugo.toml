@@ -12,5 +12,9 @@ noClasses = false
 [markup.goldmark.extensions]
 footnote = true
 
+[markup.tableOfContents]
+endLevel=4
+ordered=true
+
 [taxonomies]
 tag = 'tags'
