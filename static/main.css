@@ -59,7 +59,7 @@
   --code-font: "Commit Mono", monospace;
 
   --tags-font-family: "Source Sans 3", sans-serif;
-  --tags-font-size: calc(var(--text-font-size) * 0.85);
+  --tags-font-size: calc(var(--text-font-size) * 0.9);
   --tag-color: var(--ctp-subtext1);
 
   --top-font-family: "Rubik", sans-serif;
