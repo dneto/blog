@@ -202,7 +202,7 @@ div#toc-in-content {
 }
 
 nav#TableOfContents {
-  font-weight: 200;
+  font-weight: 400;
   font-size: calc(var(--text-font-size));
   display: none;
 
@@ -216,13 +216,12 @@ nav#TableOfContents {
       display: block;
 
       a {
-        color: var(--text-color);
         text-decoration: none;
       }
 
       a:hover {
-        text-decoration: none;
-        font-weight: 500;
+        text-decoration: underline;
+        font-weight: 600;
         text-decoration-thickness: 0.1rem;
       }
 
