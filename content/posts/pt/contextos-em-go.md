@@ -1,5 +1,5 @@
 +++
-date = '2025-05-16T23:36:38-03:00'
+date = '2025-05-24T09:00:00-03:00'
 draft = false
 title = 'Contextos no Go'
 layout = 'post'
@@ -11,7 +11,7 @@ author = 'Demétrio Neto'
 
 Uma das responsabilidades que possuo onde trabalho atualmente é ensinar e
 orientar pessoas menos experientes, e uma das principais dúvidas que recebo
-relacionadas a Go é sobre **contextos**.
+relacionadas a Go é sobre os contextos.
 
 > [!QUOTE]
 > Mas eu não aguento mais passar isso em praticamente toda chamada que faço.
@@ -21,24 +21,23 @@ relacionadas a Go é sobre **contextos**.
 
 Para entender a utilidade dos contextos, precisamos estar cientes de que a
 [concorrência](https://en.wikipedia.org/wiki/Concurrency_(computer_science))
-é algo comum no desenvolvimento atual, mesmo que não percebamos.
+é algo comum no desenvolvimento atual, **mesmo que não percebamos**.
 
-Novas tarefas podem surgir das mais diversas formas:
+Novas tarefas podem surgir das **mais diversas formas**:
 [processos](https://en.wikipedia.org/wiki/Process_(computing)),
-[threads](https://en.wikipedia.org/wiki/Thread_(computing)), goroutines
-(ou [green threads](https://en.wikipedia.org/wiki/Green_thread)) — e além de
-surgir, elas também podem ser interrompidas.
+[threads](https://en.wikipedia.org/wiki/Thread_(computing)), _goroutines_
+(ou [green threads](https://en.wikipedia.org/wiki/Green_thread)). Além de
+surgir, elas também podem — e serão — ser interrompidas.
 
-O Go nos oferece uma forma de sinalizar que um conjunto de tarefas relacionadas
-precisa ser cancelado e também de tratar esse sinal no código do nosso sistema.
+O Go nos oferece uma forma de sinalizar que um conjunto de tarefas precisa ser cancelado e também de tratar esse sinal no código do nosso sistema.
 
 ## Interrupções no dia a dia
 
 Nosso cotidiano é repleto de situações que não saem como o planejado. Muitas
 vezes, precisamos ter um plano B ou parar para pensar em como lidar com essas
-mudanças. Nos sistemas que construímos, isso não é diferente — exceto que
-que os computadores fazem exatamente o que pedimos, sem a capacidade de se
-adaptar sozinhos.
+mudanças. Nos sistemas que construímos, isso não é diferente — exceto que os
+computadores fazem exatamente o que pedimos, sem a capacidade de se adaptar
+sozinhos.
 
 Para ilustrar essa ideia, vamos a uma analogia:
 
@@ -116,7 +115,7 @@ Vamos começar olhando a [documentação da interface `context.Context`](https:/
 
 > [!TRANSLATION] Tradução
 > _Um contexto carrega um prazo, um sinal de cancelamento, e outros valores através dos limites da API._\
-> _Os métodos do tipo Context podem ser chamados por múltiplas goroutines simultâneamente_
+> _Os métodos do tipo Context podem ser chamados simultaneamente por múltiplas goroutines_
 
 ### Como cancelar contextos?
 
@@ -256,45 +255,11 @@ cozinha: parando de fazer "sorvete de cebola": cancelado pelo cliente
 restaurante: pedido "sorvete de cebola" cancelado: cancelado pelo cliente
 ```
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/QkrGwWJ9H14)
-
-```go
-func main() {
-    iceCreamPlace := restaurant{kitchen: kitchen{}}
-
-    // Define um deadline para 2 segundos no futuro
-    deadline := time.Now().Add(2 * time.Second)
-    cause := errors.New("o freezer parou de funcionar")
-    ctx, cancel := context.WithDeadlineCause(context.Background(), deadline, cause)
-    defer cancel()
-    dish := "sorvete de cebola"
-    fmt.Printf("cliente: pedindo %q\n", dish)
-
-    go func() {
-        iceCreamPlace.order(ctx, dish)
-    }()
-
-    fmt.Println("cliente: esperando o pedido ficar pronto")
-    time.Sleep(3 * time.Second) // espera mais do que o deadline
-    fmt.Printf("cliente: verificando status do pedido %q\n", dish)
-}
-```
-
-```text
-cliente: pedindo "sorvete de cebola"
-cliente: esperando o pedido ficar pronto
-restaurante: preparando o pedido "sorvete de cebola"
-cozinha: fingindo que estamos fazendo "sorvete de cebola"
-cozinha: parando de fazer "sorvete de cebola": o freezer parou de funcionar
-restaurante: pedido "sorvete de cebola" cancelado: o freezer parou de funcionar
-cliente: verificando status do pedido "sorvete de cebola"
-```
-
 ### Criando contextos com prazos de validade
 
 Também existem opções para criar contextos com um prazo de
 validade, ou seja, os contextos serão automaticamente cancelados após o período
-informado. Existem duas funções para criar um contexto com prazo de validade:
+de tempo informado.
 
 #### Com prazos de validade absolutos — `context.WithDeadline`
 
@@ -334,10 +299,40 @@ restaurante: pedido "sorvete de cebola" cancelado: context deadline exceeded
 cliente: verificando status do pedido "sorvete de cebola"
 ```
 
+Também podemos informar a causa do cancelamento trocando `context.WithDeadline`
+por `context.WithDeadlineCause`:
+
+[Exemplo completo no Go Playground](https://go.dev/play/p/DDNDSTnJcEM)
+
+```go
+func main() {
+    iceCreamPlace := restaurant{kitchen: kitchen{}}
+
+    deadline := time.Now().Add(2 * time.Second)
+    cause := errors.New("hora de levar minha avó pra aula de judô")
+    ctx, cancel := context.WithDeadlineCause(context.Background(), deadline, cause)
+    defer cancel()
+
+    // restante do código
+}
+```
+
+```text
+cliente: pedindo "sorvete de cebola"
+cliente: esperando o pedido ficar pronto
+restaurante: preparando o pedido "sorvete de cebola"
+cozinha: fingindo que estamos fazendo "sorvete de cebola"
+cozinha: parando de fazer "sorvete de cebola": hora de levar minha avó pra aula de judô
+restaurante: pedido "sorvete de cebola" cancelado: hora de levar minha avó pra aula de judô
+cliente: verificando status do pedido "sorvete de cebola"
+```
+
 #### Com prazo de validade relativo — `context.WithTimeout`
 
 A `context.WithTimeout`, que recebe um `time.Duration` e irá cancelar o
-contexto após o **periodo** informado.
+contexto após o **período** informado.
+
+[Exemplo completo no Go Playground](https://go.dev/play/p/JSwblzhicpx)
 
 ```go
 func main() {
@@ -369,15 +364,76 @@ restaurante: pedido "sorvete de cebola" cancelado: context deadline exceeded
 cliente: verificando status do pedido "sorvete de cebola"
 ```
 
->[!WARNING] Note que a saída é igual ao do `context.WithDeadline`
+Aqui também é possível informar uma causa:
+
+[Exemplo completo no Go Playground](https://go.dev/play/p/bH3kwK7Nic0)
+
+```go
+func main() {
+    iceCreamPlace := restaurant{kitchen: kitchen{}}
+
+    // Define um timeout de 2 segundos
+    cause := errors.New("desisti de esperar")
+    ctx, cancel := context.WithTimeoutCause(context.Background(), 2*time.Second, cause)
+    defer cancel()
+    dish := "sorvete de cebola"
+    fmt.Printf("cliente: pedindo %q\n", dish)
+
+    go func() {
+        iceCreamPlace.order(ctx, dish)
+    }()
+
+    fmt.Println("cliente: esperando o pedido ficar pronto")
+    time.Sleep(3 * time.Second) // espera mais do que o timeout
+    fmt.Printf("cliente: verificando status do pedido %q\n", dish)
+}
+```
+
+```text
+cliente: pedindo "sorvete de cebola"
+cliente: esperando o pedido ficar pronto
+restaurante: preparando o pedido "sorvete de cebola"
+cozinha: fingindo que estamos fazendo "sorvete de cebola"
+cozinha: parando de fazer "sorvete de cebola": desisti de esperar
+restaurante: pedido "sorvete de cebola" cancelado: desisti de esperar
+cliente: verificando status do pedido "sorvete de cebola"
+```
+
+>[!WARNING] Note que a saída é igual a do exemplo com `context.WithDeadline`
 
 ### Contextos que carregam valores — `context.WithValue`
 
 Também existe a função `context.WithValue`, que permite a criação de um contexto
-com valores armazenados internamente. Recomendo **bastante cautela** ao utilizar
-contextos dessa forma, embora seja muito útil para passar agentes de métricas e
-tracing ou dados de um request, como um request id, entre as diferentes camadas,
-o abuso dessa opção pode causar problemas de clareza no código.
+com valores armazenados internamente.
+
+[Exemplo completo no Go Playground](https://go.dev/play/p/ks4RjpRvYKM)
+
+```go
+func main() {
+    iceCreamPlace := restaurant{kitchen: kitchen{}}
+
+    // Cria um contexto com valor
+    ctx := context.WithValue(context.Background(), "orderId", "1")
+    dish := "sorvete de cebola"
+    fmt.Printf("cliente: pedindo %q\n", dish)
+
+    iceCreamPlace.order(ctx, dish)
+}
+```
+
+```text
+cliente: pedindo "sorvete de cebola"
+restaurante: recebendo pedido de "sorvete de cebola"
+cozinha: preparando "sorvete de cebola" (pedido #1)
+```
+
+> [!CAUTION] Atenção
+> Recomendo **bastante cautela** ao utilizar
+> contextos dessa forma, embora seja muito útil para passar agentes de métricas e
+> tracing ou dados de um request, como um request id, entre as diferentes camadas,
+> o abuso dessa opção pode causar problemas de clareza no código.
+>
+> Essa funcionalidade não deve ser utilizada como um dicionário genérico global.
 
 ### Crie o seu próprio
 
@@ -397,8 +453,8 @@ verificar ao final, para garantir que o fluxo não irá continuar.
 
 ### Verificando se o contexto já foi cancelado — `ctx.Err`
 
-Você pode simplesmente verificar se retorno de `ctx.Err()` é _não-nulo_. A
-função retornara `nil` caso o contexto ainda não tenha sido cancelado e algum
+Você pode simplesmente verificar se o retorno de `ctx.Err()` é _não-nulo_. A
+função retornará `nil` caso o contexto ainda não tenha sido cancelado e algum
 erro caso o cancelamento tenha ocorrido.
 
 ```go
@@ -420,7 +476,8 @@ if ctx.Err() != nil {
 > [!WARNING] Disponível a partir do Go 1.21
 
 A partir do [Go 1.21](https://tip.golang.org/doc/go1.21#contextpkgcontext)
-existe a opção de associar um `error` como causa do cancelamento de um contexto que conseguimos obter utilizando a [função `context.Cause`](https://pkg.go.dev/context#Cause).
+existe a opção de associar um `error` como causa do cancelamento de um contexto
+que podemos obter utilizando a [função `context.Cause`](https://pkg.go.dev/context#Cause).
 
 Caso o contexto tenha sido cancelado e exista uma causa _não-nula_, o valor retornado será o erro enviado como causa no momento do cancelamento. Já, se não existir uma causa específica, o valor será o mesmo da chamada `ctx.Err()`, que vimos anteriormente.
 
@@ -467,15 +524,15 @@ select{
 > [!WARNING] Disponível a partir do Go 1.21
 
 A função `context.AfterFunc(ctx Context, f func())` recebe um context `ctx`, que
-ao ser cancelado executa a função `f`. Dessa forma, a função `f` é um
+ao ser cancelado executa a função `f`. Dessa forma, a função `f` age como um
 [_callback_](https://en.wikipedia.org/wiki/Callback_(computer_programming))
-para quando um contexto for cancelado e pode ser útil quando o código em
-questão irá executar em paralelo, não precisa retornar um erro, mas precisa
-fazer algum tratamento mais complexo quando o contexto for cancelado.
+acionado no cancelamento, útil em tarefas paralelas que não precisam retornar um
+erro — mas precisam fazer algum tratamento quando o contexto for cancelado.
 
 ```go
 callback := func(){
-    //Essa função será executada quando o contexto for cancelado.
+    // Essa função será executada automaticamente quando o contexto for
+    // cancelado.
 }
 
 stop := context.AfterFunc(ctx, callback)
@@ -487,23 +544,29 @@ return nil
 
 ```
 
+## Referências e material adicional
+
+Estamos chegando ao final e não poderia deixar aqui algumas sugestões de material para você consolidar e até se aprofundar sobre concorrência, contextos e _goroutines_. Todos eles estão em inglês, mas você pode recorrer ao Google Tradutor ou alguma IA.
+
+- [Go Concurrency Patterns: Pipelines and Cancelation](https://go.dev/blog/pipelines) explica o padrão de cancelamento de tarefas utilizando canais.
+- [Go Concurrency Patterns: Context](https://go.dev/blog/context) introduz as funcionalidades do pacote `context`.
+- [Context and Struct](https://go.dev/blog/context-and-structs) esclarece porque não é uma boa ideia passar contextos dentro de uma `struct`.
+- [Learn Go with tests: Contexts](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/context) é uma abordagem que introduz os contextos com uma abordagem prática usando TDD (test-driven-development).
+- [The Complete Guide to Context in Golang: Efficient Concurrency Management](https://medium.com/@jamal.kaksouri/the-complete-guide-to-context-in-golang-efficient-concurrency-management-43d722f6eaea) além de apresentar o tema, se aprofunda um pouco em alguns cenários como requesições HTTP e conexão com banco de dados.
+- [Graceful Shutdown in Go: Practical Patterns](https://victoriametrics.com/blog/go-graceful-shutdown/index.html) apresenta padrões utilizando canais e contexts para encerrar o ciclo de vida de forma controlada.
+
 ## Conclusão
 
 Talvez você já tenha lido a [documentação do pacote context](https://pkg.go.dev/context)
 anteriormente e sentido dificuldades em entender de quando e onde os contextos
 podem ou devem ser usados. Isso pode ter acontecido porque a documentação se
-preocupa em informar quais funcionalidades existem e não os casos de uso em que ela são
-aplicáveis. Espero que os exemplos usados nesse artigo tenham te ajudado a entender melhor esse tal de parâmetro `ctx` que as funções eventualmente precisam.
+concentra em informar quais funcionalidades existem, mas não os casos de uso
+prático em que elas se aplicam.
 
-Não deixe de conferir o link com referências e material adicional mais abaixo.
+Com esse artigo, foquei em tentar introduzir o tema com alguns exemplos práticos
+e analogias — e espero que isso tenha te ajudado a entender melhor sobre o tema.
+
+Caso tenha alguma dúvida ou sugestão, minhas links de contato estão em links
+estão no topo da página.
 
 Até uma próxima 👋!
-
-## Referências e material adicional
-
-- [Go Concurrency Patterns: Pipelines and Cancelation](https://go.dev/blog/pipelines)
-- [Go Concurrency Patterns: Context](https://go.dev/blog/context)
-- [Context and Struct](https://go.dev/blog/context-and-structs)
-- [Learn Go with tests: Contexts](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/context)
-- [The Complete Guide to Context in Golang: Efficient Concurrency Management](https://medium.com/@jamal.kaksouri/the-complete-guide-to-context-in-golang-efficient-concurrency-management-43d722f6eaea)
-- [Graceful Shutdown in Go: Practical Patterns](https://victoriametrics.com/blog/go-graceful-shutdown/index.html)
