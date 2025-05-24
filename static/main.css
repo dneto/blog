@@ -97,6 +97,7 @@ div#toc-in-content {
     align-items: center;
     gap: 0.5ch;
     font-size: calc(var(--text-font-size)*1.2);
+    font-family: 'Rubik', sans-serif;
     cursor: pointer;
   }
 }
