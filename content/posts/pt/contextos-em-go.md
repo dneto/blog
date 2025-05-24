@@ -27,7 +27,7 @@ Novas tarefas podem surgir das **mais diversas formas**:
 [processos](https://en.wikipedia.org/wiki/Process_(computing)),
 [threads](https://en.wikipedia.org/wiki/Thread_(computing)), _goroutines_
 (ou [green threads](https://en.wikipedia.org/wiki/Green_thread)). Além de
-surgir, elas também podem — e serão — ser interrompidas.
+surgir, elas também podem — **e serão** — interrompidas.
 
 O Go nos oferece uma forma de sinalizar que um conjunto de tarefas precisa ser cancelado e também de tratar esse sinal no código do nosso sistema.
 
