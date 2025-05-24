@@ -258,7 +258,7 @@ restaurante: pedido "sorvete de cebola" cancelado: cancelado pelo cliente
 ### Criando contextos com prazos de validade
 
 Também existem opções para criar contextos com um prazo de
-validade, ou seja, os contextos serão automaticamente cancelados após o período
+validade, ou seja, eles serão automaticamente cancelados após o período
 de tempo informado.
 
 #### Com prazo de validade absoluto — `context.WithDeadline`
