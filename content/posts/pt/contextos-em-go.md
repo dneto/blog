@@ -3,7 +3,7 @@ date = '2025-05-24T09:00:00-03:00'
 draft = false
 title = 'Contextos no Go'
 layout = 'post'
-tags = ['go', 'programação']
+tags = ['go', 'programação', 'concorrência']
 author = 'Demétrio Neto'
 +++
 
@@ -261,7 +261,7 @@ Também existem opções para criar contextos com um prazo de
 validade, ou seja, os contextos serão automaticamente cancelados após o período
 de tempo informado.
 
-#### Com prazos de validade absolutos — `context.WithDeadline`
+#### Com prazo de validade absoluto — `context.WithDeadline`
 
 A `context.WithDeadline`, que recebe um `time.Time` e irá cancelar o
 contexto após o tempo informado.
