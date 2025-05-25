@@ -739,11 +739,11 @@ div#posts {
 }
 
 .footer {
-  padding-bottom: 1rem;
+  padding: 0 1rem 1rem;
   font-weight: 400;
   text-align: center;
   font-family: 'Rubik', sans-serif;
-  font-size: calc(var(--text-font-size)*0.85);
+  font-size: calc(var(--text-font-size)*0.80);
   color: var(--ctp-overlay2)
 }
 
