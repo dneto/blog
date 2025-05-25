@@ -463,6 +463,8 @@ restaurante: pedido "sorvete de cebola" cancelado: context deadline exceeded
 cliente: verificando status do pedido "sorvete de cebola"
 ```
 
+>[!TIP] Note que a saída é igual a do exemplo com `context.WithDeadline`
+
 Aqui também é possível informar uma causa:
 
 [Exemplo completo no Go Playground](https://go.dev/play/p/bH3kwK7Nic0)
@@ -497,8 +499,6 @@ cozinha: parando de fazer "sorvete de cebola": desisti de esperar
 restaurante: pedido "sorvete de cebola" cancelado: desisti de esperar
 cliente: verificando status do pedido "sorvete de cebola"
 ```
-
->[!WARNING] Note que a saída é igual a do exemplo com `context.WithDeadline`
 
 ### Criando seu próprio contexto
 
@@ -573,7 +573,7 @@ Pela natureza _bloqueante_ da chamada, geralmente usamos uma cláusula `select`
 para escolher entre o resultado do `ctx.Done()` e algum outro canal, como no
 exemplo abaixo:
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/AtdnuKP1dz5)
+[Exemplo completo no Go Playground](https://go.dev/play/p/Cz1H7pOg_HH)
 
 ```go
 package main
@@ -591,7 +591,7 @@ func main() {
     // Goroutine que aguarda o cancelamento do contexto
     go func() {
         <-ctx.Done() // aguardando o recebimento da mensagem de cancelamento
-        fmt.Println("callback: contexto cancelado!")
+        fmt.Println("contexto cancelado após recebimento do canal!")
     }()
 
     fmt.Println("fazendo algo importante...")

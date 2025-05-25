@@ -2,10 +2,13 @@
 {{ .Title }} - {{ .Site.Title }}
 {{ end }}
 {{ define "main" }}
+{{with .Resources.GetMatch "*cover*"}}
+<img src="{{ .RelPermalink}}" class="cover" />
+{{end}}
 <div id="content">
   {{ partial "title.html" . }}
   <div id="toc-in-content">
-    <div class="header collapsible">
+    <div class="header expandable">
       <i class="ph-bold ph-list-numbers"></i> <strong>Sumário</strong>
     </div>
     {{.TableOfContents}}
