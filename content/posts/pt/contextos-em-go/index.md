@@ -555,8 +555,16 @@ if ctx.Err() != nil {
 
 ### Escutando o sinal de cancelamento — `ctx.Done`
 
-Além da verificação ativa utilizando o `ctx.Err()`, é possível receber um
-`channel` que informa o cancelamento através da chamada `ctx.Done()`.
+Além da verificação ativa utilizando o `ctx.Err()`, também é possível **ouvir**
+um sinal de cancelamento por meio de um canal do tipo `<-chan struct{}`,
+retornado pela chamada `ctx.Done()`.
+
+> [!TIP]
+> Uma `struct{}` é uma struct vazia — ela **não consome memória**.
+> Por isso, o canal retornado por `ctx.Done()` é usado **apenas para sinalizar**
+> o cancelamento, sem transmitir dados adicionais.
+>
+> Veja mais sobre structs vazias em: [The empty struct](https://dave.cheney.net/2014/03/25/the-empty-struct>)
 
 Quando a chamada `<-ctx.Done()` é feita, o código aguarda o recebimento através
 do canal, bloqueando a execução da _goroutine_ até receber algum conteúdo.
@@ -565,19 +573,39 @@ Pela natureza _bloqueante_ da chamada, geralmente usamos uma cláusula `select`
 para escolher entre o resultado do `ctx.Done()` e algum outro canal, como no
 exemplo abaixo:
 
+[Exemplo completo no Go Playground](https://go.dev/play/p/AtdnuKP1dz5)
+
 ```go
-response := make(chan string, 1)
+package main
 
-go func(){
-    response <- longProcess()
-}
+import (
+    "context"
+    "fmt"
+    "time"
+)
 
-select{
-    case r := <-response:
-        return r
-    case <-ctx.Done():
-        return fmt.Errorf("falha no processamento: %w", context.Cause(ctx))
+func main() {
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    // Goroutine que aguarda o cancelamento do contexto
+    go func() {
+        <-ctx.Done() // aguardando o recebimento da mensagem de cancelamento
+        fmt.Println("callback: contexto cancelado!")
+    }()
+
+    fmt.Println("fazendo algo importante...")
+    time.Sleep(1 * time.Second)
+    fmt.Println("cancelando o contexto")
+    cancel()
+    time.Sleep(1 * time.Second) // aguardando callback ser executado
 }
+```
+
+```text
+fazendo algo importante...
+cancelando o contexto
+callback: contexto cancelado!
 ```
 
 ### Usando callbacks para tratar um contexto cancelado — `context.AfterFunc`
@@ -593,7 +621,7 @@ erro — mas precisam fazer algum tratamento quando o contexto for cancelado.
 Essa chamada retorna uma `func() bool`  que pode ser chamada para desfazer a
 associação dela com o contexto `ctx`, fazendo com que ela não seja mais chamada caso o contexto seja cancelado. Ela irá retornar `true` .
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/1H1eXBy4uAV)
+[Exemplo completo no Go Playground](https://go.dev/play/p/Xc_49SbTBnM)
 
 ```go
 package main
@@ -622,10 +650,16 @@ func main() {
     fmt.Println("Conseguimos cancelar o callback2?", stop2())
     fmt.Println("Conseguimos cancelar o callback2?", stop2(), "(já está cancelado)")
 
-    go cancel()
+    cancel()
 
     time.Sleep(1 * time.Second) // aguardando callbacks serem executados
 }
+```
+
+```text
+Conseguimos cancelar o callback2? true
+Conseguimos cancelar o callback2? false (já está cancelado)
+callback: contexto cancelado!
 ```
 
 ## Referências e material adicional
@@ -635,7 +669,7 @@ Estamos chegando ao final e não poderia deixar aqui algumas sugestões de mater
 - [Go Concurrency Patterns: Pipelines and Cancelation](https://go.dev/blog/pipelines) explica o padrão de cancelamento de tarefas utilizando canais.
 - [Go Concurrency Patterns: Context](https://go.dev/blog/context) introduz as funcionalidades do pacote `context`.
 - [Context and Struct](https://go.dev/blog/context-and-structs) esclarece porque não é uma boa ideia passar contextos dentro de uma `struct`.
-- [Learn Go with tests: Contexts](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/context) é uma abordagem que introduz os contextos com uma abordagem prática usando TDD (test-driven-development).
+- [Learn Go with tests: Contexts](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/context) é uma abordagem que introduz os contextos com uma abordagem prática usando TDD (Test Driven Development).
 - [The Complete Guide to Context in Golang: Efficient Concurrency Management](https://medium.com/@jamal.kaksouri/the-complete-guide-to-context-in-golang-efficient-concurrency-management-43d722f6eaea) além de apresentar o tema, se aprofunda um pouco em alguns cenários como requesições HTTP e conexão com banco de dados.
 - [Graceful Shutdown in Go: Practical Patterns](https://victoriametrics.com/blog/go-graceful-shutdown/index.html) apresenta padrões utilizando canais e contexts para encerrar o ciclo de vida de forma controlada.
 
