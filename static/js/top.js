@@ -5,7 +5,6 @@ let mybutton = document.getElementById("goToTop");
 window.onscroll = function () { scrollFunction() };
 
 function scrollFunction() {
-    console.log(innerHeight)
     if (document.body.scrollTop > innerHeight || document.documentElement.scrollTop > innerHeight) {
         mybutton.style.display = "flex";
     } else {
