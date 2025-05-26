@@ -1,0 +1,44 @@
+<div>
+    <script>
+        function getTheme() {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? "catppuccin_macchiato"
+                : "catppuccin_latte";
+        }
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            const iframe = document.querySelector("iframe.giscus-frame");
+            const sendMessage = (message) => {
+                if (iframe?.contentWindow) {
+                    iframe.contentWindow.postMessage(
+                        { giscus: message },
+                        "https://giscus.app",
+                    );
+                }
+            };
+            sendMessage({ setConfig: { theme: getTheme() } });
+        });
+        let giscusAttributes = {
+            src: "https://giscus.app/client.js",
+            "data-repo": "dneto/blog",
+            "data-repo-id": "R_kgDOOr5V0Q",
+            "data-category": "Comments",
+            "data-category-id": "DIC_kwDOOr5V0c4CqlXE",
+            "data-mapping": "title",
+            "data-strict": "0",
+            "data-reactions-enabled": "1",
+            "data-emit-metadata": "0",
+            "data-input-position": "top",
+            "data-theme": getTheme(),
+            "data-lang": "{{.Language}}",
+            crossorigin: "anonymous",
+            async: "",
+        };
+        let giscusScript = document.createElement("script");
+        Object.entries(giscusAttributes).forEach(([key, value]) =>
+            giscusScript.setAttribute(key, value),
+        );
+        document.querySelector("#content").appendChild(giscusScript);
+    </script>
+
+</div>
