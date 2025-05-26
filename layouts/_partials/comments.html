@@ -1,4 +1,4 @@
-<div>
+<div id="comments">
     <script>
         function getTheme() {
             return window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -38,6 +38,6 @@
         Object.entries(giscusAttributes).forEach(([key, value]) =>
             giscusScript.setAttribute(key, value),
         );
-        document.querySelector(".content").appendChild(giscusScript);
+        document.querySelector("#comments").appendChild(giscusScript);
     </script>
 </div>
