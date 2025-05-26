@@ -559,7 +559,7 @@ Além da verificação ativa utilizando o `ctx.Err()`, também é possível **ou
 um sinal de cancelamento por meio de um canal do tipo `<-chan struct{}`,
 retornado pela chamada `ctx.Done()`.
 
-> [!TIP]
+> [!INFO]
 > Uma `struct{}` é uma struct vazia — ela **não consome memória**.
 > Por isso, o canal retornado por `ctx.Done()` é usado **apenas para sinalizar**
 > o cancelamento, sem transmitir dados adicionais.
@@ -684,6 +684,15 @@ prático em que elas se aplicam.
 Com esse artigo, foquei em tentar introduzir o tema com alguns exemplos práticos
 e analogias — e espero que isso tenha te ajudado a entender melhor sobre o tema.
 
-Caso tenha alguma dúvida ou sugestão, meus links de contato estão no topo da página.
+Se você tiver dúvidas, sugestões ou apenas quiser trocar uma ideia, sinta-se à
+vontade para entrar em contato através dos comentários ou pelos links abaixo:
+
+- [Bluesky](https://bsky.app/profile/dneto.me)
+- [Discord](https://discord.com/users/100316148863614976)
+- [GitHub](https://github.com/dneto)
+- [LinkedIn](https://www.linkedin.com/in/dem%C3%A9trio-menezes-neto-54704a137/)
+- [X (antigo Twitter)](https://x.com/dneto__)
+
+Estou sempre aberto a feedbacks e novas ideias! 🚀
 
 Até uma próxima 👋!
