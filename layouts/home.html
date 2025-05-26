@@ -5,7 +5,7 @@
 {{ define "main" }}
 {{ .Content }}
 {{ range site.RegularPages }}
-<div id="content" class="preview">
+<div class="preview content">
   {{ partial "title.html" . }}
   {{ .Summary }}
 </div>
