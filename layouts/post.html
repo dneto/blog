@@ -9,20 +9,22 @@
   {{ partial "title.html" . }}
   {{ with .Translations }}
   <div class="translations">
-  {{lang.Translate "also_available_in"}}
-  <ul>
-  {{range . }}
-  <li><a href="{{ .RelPermalink }}">{{ .Language.LanguageName }}</a></li>
-  {{end}}
-  </ul>
+    {{lang.Translate "also_available_in"}}
+    <ul>
+      {{range . }}
+      <li><a href="{{ .RelPermalink }}">{{ .Language.LanguageName }}</a></li>
+      {{end}}
+    </ul>
   </div>
   {{ end }}
+  {{ if in .TableOfContents "li" }}
   <div id="toc-in-content">
     <div class="header expandable">
       <i class="ph-bold ph-list-numbers"></i> <strong>{{lang.Translate "toc"}}</strong>
     </div>
     {{.TableOfContents}}
   </div>
+  {{end}}
   <div id="post">
     {{ .Content }}
   </div>

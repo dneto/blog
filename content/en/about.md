@@ -2,6 +2,7 @@
 date = '2025-05-18T12:05:59-03:00'
 title = 'About Me'
 layout = 'post'
+toc = false
 +++
 
 Hello! My name is **Demétrio**, but some people call me _Demi_ or _Deme_. I’ve been
