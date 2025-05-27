@@ -5,6 +5,7 @@ title = 'Contexts in Go'
 layout = 'post'
 tags = ['go', 'programação', 'concorrência']
 author = 'Demétrio Neto'
+description = 'Entenda de forma leve e prática como o pacote context funciona no Go — com analogias, exemplos e boas práticas.'
 +++
 
 ## Introdução

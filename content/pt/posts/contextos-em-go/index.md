@@ -5,6 +5,7 @@ title = 'Contextos no Go'
 layout = 'post'
 tags = ['go', 'programação', 'concorrência']
 author = 'Demétrio Neto'
+description = 'Entenda de forma leve e prática como o pacote context funciona no Go — com analogias, exemplos e boas práticas.'
 +++
 
 ## Introdução
@@ -559,8 +560,25 @@ Além da verificação ativa utilizando o `ctx.Err()`, também é possível **ou
 um sinal de cancelamento por meio de um canal do tipo `<-chan struct{}`,
 retornado pela chamada `ctx.Done()`.
 
-> [!INFO]
-> Uma `struct{}` é uma struct vazia — ela **não consome memória**.
+> [!INFO] Canais e structs vazias
+> Os canais — do inglês _channels_ — são condutores de informação seguros em
+> ambientes concorrentes. Isso significa que podem ser utilizados por diversas
+> _goroutines_ ao mesmo tempo, sem riscos de condições de corrida.
+>
+> Você pode imaginar um canal como uma fila de mensagens. A operação `<-meucanal`
+> recebe a próxima "mensagem", ou aguarda até que uma esteja disponível. Já
+> `meucanal <- "conteúdo"` envia a mensagem `"conteúdo"` para o canal — e, caso
+> a fila já esteja cheia, espera até que haja espaço disponível.
+>
+> Além disso, o operador `<-` pode aparecer antes ou depois na declaração de tipos
+> para indicar se o canal é de **somente leitura** (`<-chan`) ou **somente escrita**
+> (`chan<-`). No caso do `ctx.Done` temos um canal de **somente leitura** de
+> struct vazia (`struct{}`)
+>
+> Para entender melhor como canais funcionam, recomendo visitar o  
+> [Tour do Go — Concurrency](https://go.dev/tour/concurrency/2).
+>
+> Já uma `struct{}` é uma struct vazia — ela **não consome memória**.
 > Por isso, o canal retornado por `ctx.Done()` é usado **apenas para sinalizar**
 > o cancelamento, sem transmitir dados adicionais.
 >
