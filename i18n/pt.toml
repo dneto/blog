@@ -11,3 +11,11 @@ comment = 'comentário'
 code = 'código'
 powered_by = 'publicado com tecnologia'
 all_rights_reserved = 'todos os direitos reservados'
+
+home = "início"
+posts = "publicações"
+about = "sobre"
+tags = "marcadores"
+toc = "Sumário"
+
+also_available_in = "Esse texto também está disponível em:"

@@ -1,8 +1,8 @@
 baseURL = 'https://dneto.me/'
-defaultContentLanguage = 'pt'
-languageCode = 'pt-BR'
 title = 'dneto.me'
 summaryLength = 100
+defaultContentLanguage = 'pt'
+languageCode = 'pt-BR'
 
 [markup]
 [markup.highlight]
@@ -13,8 +13,15 @@ noClasses = false
 footnote = true
 
 [markup.tableOfContents]
-endLevel=4
-ordered=true
+endLevel = 4
+ordered = true
 
 [taxonomies]
 tag = 'tags'
+
+[languages.en]
+contentDir = 'content/en'
+languageName = 'English'
+[languages.pt]
+contentDir = 'content/pt'
+languageName = 'Português'

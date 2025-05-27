@@ -17,11 +17,20 @@
     <link rel="stylesheet" href="/main.css">
     <link rel="icon" type="image/png" href="/images/avatar.png" />
     <style type="text/css" media="screen">
-        @media (prefers-color-scheme: dark) { 
-            {{ partial "css/syntax-dark.css" . | safeCSS }}
+        @media (prefers-color-scheme: dark) {
+                {
+                    {
+                    partial "css/syntax-dark.css" . | safeCSS
+                }
+            }
         }
-        @media (prefers-color-scheme: light) { 
-            {{ partial "css/syntax-light.css" . | safeCSS }} 
+
+        @media (prefers-color-scheme: light) {
+                {
+                    {
+                    partial "css/syntax-light.css" . | safeCSS
+                }
+            }
         }
     </style>
 </head>
@@ -41,16 +50,16 @@
                         <i class="ph ph-discord-logo"></i></a></li>
                 <li><a href="https://github.com/dneto" rel="noopener noreferrer" target="_blank"><i
                             class="ph ph-github-logo"></i></a></li>
-                <li><a href="https://www.linkedin.com/in/dem%C3%A9trio-menezes-neto-54704a137/" rel="noopener noreferrer" target="_blank"><i
-                            class="ph ph-linkedin-logo"></i></a></li>
+                <li><a href="https://www.linkedin.com/in/dem%C3%A9trio-menezes-neto-54704a137/"
+                        rel="noopener noreferrer" target="_blank"><i class="ph ph-linkedin-logo"></i></a></li>
                 <li><a href="https://x.com/dneto__" rel="noopener noreferrer" target="_blank"><i
                             class="ph ph-x-logo"></i></a></li>
             </ul>
             <ul class="pages">
-                <li><a href="/">Início</a></li>
-                <li><a href="/posts/">Publicações</a></li>
-                <li><a href="/about/">Sobre</a></li>
-                <li><a href="/tags/">Tags</a></li>
+                <li><a href="{{relLangURL "/"}}">{{lang.Translate "home" | title}}</a></li>
+                <li><a href="{{relLangURL "/posts/"}}">{{lang.Translate "posts" | title}}</a></li>
+                <li><a href="{{relLangURL "/about/"}}">{{lang.Translate "about" | title}}</a></li>
+                <li><a href="{{relLangURL "/tags/"}}">{{lang.Translate "tags" | title }}</a></li>
             </ul>
         </div>
     </nav>
@@ -67,7 +76,9 @@
         <i class="ph-fill ph-caret-up"></i>
     </div>
     <footer class="footer">
-        {{ dateFormat "2006" now }} ©  <span style="color: var(--heading-color)">Demétrio de Castro Menezes Neto</span>. {{ lang.Translate "all_rights_reserved" | strings.FirstUpper }}. {{ lang.Translate "powered_by" | strings.FirstUpper }} <a href="https://gohugo.io">Hugo</a>.
+        {{ dateFormat "2006" now }} © <span style="color: var(--heading-color)">Demétrio Neto</span>. {{ lang.Translate
+        "all_rights_reserved" | strings.FirstUpper }}. {{ lang.Translate "powered_by" | strings.FirstUpper }} <a
+            href="https://gohugo.io">Hugo</a>.
     </footer>
     <script src="/js/collapsible.js"></script>
     <script src="/js/top.js"></script>

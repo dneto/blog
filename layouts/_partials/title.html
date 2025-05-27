@@ -6,7 +6,7 @@
     </h1>
     <div id="tags">
         <ul>
-            <li><i class="ph-fill ph-calendar"></i>{{ time.Format "02 de January de 2006" .Date }}</li>
+            <li><i class="ph-fill ph-calendar"></i>{{ time.Format "02 Jan 2006" .Date }}</li>
             <li><i class="ph-fill ph-clock"></i>{{ .ReadingTime }} minutos</li>
             <li><i class="ph-fill ph-book-open-text"></i>{{ .WordCount}} palavras</li>
             {{range .Params.Tags}}

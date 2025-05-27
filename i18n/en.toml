@@ -1,0 +1,21 @@
+note = 'note'
+quote = 'quote'
+warning = 'warning'
+error = 'error'
+info = 'info'
+translation = 'translation'
+tip = 'tip'
+caution = 'caution'
+important = 'important'
+comment = 'comment'
+code = 'code'
+powered_by = 'powered by'
+all_rights_reserved = 'all rights reserved'
+
+home = "home"
+posts = "posts"
+about = "about"
+tags = "tags"
+toc = "Table of contents"
+
+also_available_in = "Also available in:"
