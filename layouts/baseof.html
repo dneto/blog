@@ -65,6 +65,13 @@
                 <li><a href="{{relLangURL "/posts/"}}">{{lang.Translate "posts" | title}}</a></li>
                 <li><a href="{{relLangURL "/about/"}}">{{lang.Translate "about" | title}}</a></li>
                 <li><a href="{{relLangURL "/tags/"}}">{{lang.Translate "tags" | title }}</a></li>
+                {{with .GetPage "/"}}
+                {{with .Translations}}
+                {{range . }}
+                <li><a href="{{ .RelPermalink }}">{{ .Language.Lang | title }}</a></li>
+                {{end}}
+                {{end}}
+                {{end}}
             </ul>
         </div>
     </nav>
