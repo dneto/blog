@@ -1,0 +1,11 @@
+{{- $url := .Get "url" -}}
+{{- $title := .Get "title" -}}
+{{- $icon := .Get "icon" -}}
+{{- $u := urls.Parse $url -}}
+<div class="btn">
+{{- with $icon }}<i class="{{ . }}"></i>{{ end -}} 
+<a href="{{$u}}" {{- if $u.IsAbs }}
+    rel="external noopener noreferrer" target="_blank" {{ end -}}>
+    {{- with $title }}{{ . }}{{ end -}}
+</a>
+</div>

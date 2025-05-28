@@ -764,11 +764,13 @@ div#posts {
   margin-bottom: 0.15ch;
   user-select: none;
   align-items: center;
-  gap: 0.1ch;
+  gap: 1ch;
+
 
   &:hover {
     background-color: var(--ctp-surface0);
   }
+
 
   &.round {
     border-radius: 100%;
@@ -778,6 +780,13 @@ div#posts {
     font-size: calc(var(--text-font-size) * 1.5);
   }
 
+  a {
+    text-decoration: none;
+    color: var(--text-color);
+    &:after{
+      content:'';
+    }
+  }
 }
 
 @media screen and (min-width: 1280px) {}

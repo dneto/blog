@@ -144,11 +144,13 @@ para criar contextos — vamos dar uma olhada nelas?
 ## Criando novos contextos
 
 É importante lembrar que, exceto pelos métodos `context.Background()` e
-`context.TODO()`, todos as formas de criação de um contexto exigem um _contexto-pai_.
+`context.TODO()`, todos as formas de criação de um contexto exigem um _contexto base_.
 
-Sempre que um contexto-pai for cancelado, todos seus filhos também serão cancelados.
+Sempre que um _contexto base_ for cancelado, os cancelamentos serão propagados
+para todos os contextos derivados.
 
-Nessa seção teremos alguns exemplos mais completos que irão utilizar o código abaixo, esses exemplos também contam com um link para execução no [Go Playground](https://play.golang.org).
+Nessa seção teremos alguns exemplos mais completos que irão utilizar o código
+abaixo, esses exemplos também contam com um link para execução no [Go Playground](https://play.golang.org).
 
 ### Estrutura dos exemplos
 
@@ -194,7 +196,15 @@ mecanismo para cancelamento.
 
 #### Criando contextos básicos — `context.Background`
 
-O `context.Background` cria um novo contexto vazio, ou seja, não possui prazos, nem guarda valores — e não pode ser cancelado. Pode ser criado no início da aplicação, ou em testes, por exemplo.
+O `context.Background` cria um novo contexto vazio — ou seja, sem prazos, sem
+valores e que não pode ser cancelado.  
+
+Ele costuma ser usado como ponto de partida quando precisamos passar um
+contexto, mas ainda não temos um contexto anterior disponível.  
+
+É muito comum usá-lo no início da aplicação (como na função `main`), durante a
+configuração de serviços ou em testes, onde precisamos de um _contexto base_
+para começar a construir outros contextos a partir dele.
 
 ```go
 ctx := context.Background()
@@ -216,7 +226,7 @@ ctx := context.TODO()
 Também existe a função `context.WithValue`, que permite a criação de um contexto
 com valores armazenados internamente.
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/ks4RjpRvYKM)
+{{< btn url="https://go.dev/play/p/ks4RjpRvYKM" title="Exemplo completo no Go Playground" icon="ph-fill ph-play" >}}
 
 ```go
 func main() {
@@ -249,9 +259,9 @@ cozinha: preparando "sorvete de cebola" (pedido #1)
 
 > [!WARNING] Disponível a partir do Go 1.21
 
-O `context.WithoutCancel` cria um novo contexto a partir de um contexto-pai, mas continuará ativo, mesmo que o original tenha sido cancelado.
+O `context.WithoutCancel` cria um novo contexto a partir de um _contexto base_, mas continuará ativo, mesmo que o original tenha sido cancelado.
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/74cJvUW3q4F)
+{{< btn url="https://go.dev/play/p/74cJvUW3q4F" title="Exemplo completo no Go Playground" icon="ph-fill ph-play" >}}
 
 ```go
 func main() {
@@ -293,7 +303,7 @@ contexto criado.
 > É sempre uma boa prática utilizar o `defer` nas funções de
 > cancelamento, pois ajuda a evitar o vazamento de _goroutines_.
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/xfY8hceWaHC)
+{{< btn url="https://go.dev/play/p/xfY8hceWaHC" title="Exemplo completo no Go Playground" icon="ph-fill ph-play" >}}
 
 ```go
 func main() {
@@ -329,7 +339,7 @@ restaurante: pedido "sorvete de cebola" cancelado: context canceled
 Também é possível evidenciar a causa do cancelamento utilizando a função
 `context.WithCancelCause`.
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/rUI_qSkZTsF)
+{{< btn url="https://go.dev/play/p/rUI_qSkZTsF" title="Exemplo completo no Go Playground" icon="ph-fill ph-play" >}}
 
 ```go
 func main() {
@@ -366,7 +376,7 @@ restaurante: pedido "sorvete de cebola" cancelado: cancelado pelo cliente
 A `context.WithDeadline`, que recebe um `time.Time` e irá cancelar o
 contexto automaticamente após **a data** informada.
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/7MiJmFFW1wl)
+{{< btn url="https://go.dev/play/p/7MiJmFFW1wl" title="Exemplo completo no Go Playground" icon="ph-fill ph-play" >}}
 
 ```go
 func main() {
@@ -402,7 +412,7 @@ cliente: verificando status do pedido "sorvete de cebola"
 Também podemos informar a causa do cancelamento trocando `context.WithDeadline`
 por `context.WithDeadlineCause`:
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/DDNDSTnJcEM)
+{{< btn url="https://go.dev/play/p/DDNDSTnJcEM" title="Exemplo completo no Go Playground" icon="ph-fill ph-play" >}}
 
 ```go
 func main() {
@@ -432,7 +442,7 @@ cliente: verificando status do pedido "sorvete de cebola"
 A `context.WithTimeout`, que recebe um `time.Duration` e irá cancelar o
 contexto após o **período** informado.
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/JSwblzhicpx)
+{{< btn url="https://go.dev/play/p/JSwblzhicpx" title="Exemplo completo no Go Playground" icon="ph-fill ph-play" >}}
 
 ```go
 func main() {
@@ -468,7 +478,8 @@ cliente: verificando status do pedido "sorvete de cebola"
 
 Aqui também é possível informar uma causa:
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/bH3kwK7Nic0)
+{{< btn url="https://go.dev/play/p/bH3kwK7Nic0" title="Exemplo completo no Go Playground" icon="ph-fill ph-play" >}}
+
 
 ```go
 func main() {
@@ -560,38 +571,27 @@ Além da verificação ativa utilizando o `ctx.Err()`, também é possível **ou
 um sinal de cancelamento por meio de um canal do tipo `<-chan struct{}`,
 retornado pela chamada `ctx.Done()`.
 
-> [!INFO] Canais e structs vazias
+> [!NOTE] Canais
 > Os canais — do inglês _channels_ — são condutores de informação seguros em
-> ambientes concorrentes. Isso significa que podem ser utilizados por diversas
-> _goroutines_ ao mesmo tempo, sem riscos de condições de corrida.
+> ambientes concorrentes. Isso significa que podem ser usados por várias
+> _goroutines_ ao mesmo tempo, sem risco de condições de corrida.
 >
-> Você pode imaginar um canal como uma fila de mensagens. A operação `<-meucanal`
-> recebe a próxima "mensagem", ou aguarda até que uma esteja disponível. Já
-> `meucanal <- "conteúdo"` envia a mensagem `"conteúdo"` para o canal — e, caso
-> a fila já esteja cheia, espera até que haja espaço disponível.
->
-> Além disso, o operador `<-` pode aparecer antes ou depois na declaração de tipos
-> para indicar se o canal é de **somente leitura** (`<-chan`) ou **somente escrita**
-> (`chan<-`). No caso do `ctx.Done` temos um canal de **somente leitura** de
-> struct vazia (`struct{}`)
->
-> Para entender melhor como canais funcionam, recomendo visitar o  
+> Para entender melhor como canais funcionam, recomendo visitar o a seção do
+> tour sobre concorrência:  
 > [Tour do Go — Concurrency](https://go.dev/tour/concurrency/2).
->
-> Já uma `struct{}` é uma struct vazia — ela **não consome memória**.
+
+> [!NOTE] Structs vazias (`struct{}`)
+> A `struct{}` é uma estrutura vazia — ela **não consome memória**.
 > Por isso, o canal retornado por `ctx.Done()` é usado **apenas para sinalizar**
-> o cancelamento, sem transmitir dados adicionais.
+> o cancelamento, sem carregar dados.
 >
-> Veja mais sobre structs vazias em: [The empty struct](https://dave.cheney.net/2014/03/25/the-empty-struct>)
+> Saiba mais sobre structs vazias em:  
+> [The empty struct — Dave Cheney](https://dave.cheney.net/2014/03/25/the-empty-struct)
 
 Quando a chamada `<-ctx.Done()` é feita, o código aguarda o recebimento através
 do canal, bloqueando a execução da _goroutine_ até receber algum conteúdo.
 
-Pela natureza _bloqueante_ da chamada, geralmente usamos uma cláusula `select`
-para escolher entre o resultado do `ctx.Done()` e algum outro canal, como no
-exemplo abaixo:
-
-[Exemplo completo no Go Playground](https://go.dev/play/p/Cz1H7pOg_HH)
+{{< btn url="https://go.dev/play/p/Cz1H7pOg_HH" title="Exemplo completo no Go Playground" icon="ph-fill ph-play" >}}
 
 ```go
 package main
@@ -623,7 +623,49 @@ func main() {
 ```text
 fazendo algo importante...
 cancelando o contexto
-callback: contexto cancelado!
+contexto cancelado após recebimento do canal!
+```
+
+Pela natureza _bloqueante_ da chamada, geralmente usamos uma [cláusula `select`](https://go.dev/tour/concurrency/5)
+para escolher entre o resultado do `ctx.Done()` e algum outro canal.
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "time"
+)
+
+func main() {
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    // Goroutine que aguarda o cancelamento do contexto
+    go func() {
+        fmt.Println("goroutine: aguardando cancelamento ou conclusão...")
+        select {
+        case <-ctx.Done(): // Escuta o cancelamento do contexto
+            fmt.Println("goroutine: contexto cancelado!")
+        case <-time.After(2 * time.Second): // Simula uma tarefa longa
+            fmt.Println("goroutine: tarefa concluída!")
+        }
+    }()
+
+    fmt.Println("fazendo algo importante...")
+    time.Sleep(1 * time.Second)
+    fmt.Println("cancelando o contexto")
+    cancel()
+    time.Sleep(1 * time.Second) // Aguarda para garantir que a goroutine finalize
+}
+```
+
+```text
+fazendo algo importante...
+goroutine: aguardando cancelamento ou conclusão...
+cancelando o contexto
+goroutine: contexto cancelado!
 ```
 
 ### Usando callbacks para tratar um contexto cancelado — `context.AfterFunc`
@@ -639,7 +681,7 @@ erro — mas precisam fazer algum tratamento quando o contexto for cancelado.
 Essa chamada retorna uma `func() bool`  que pode ser chamada para desfazer a
 associação dela com o contexto `ctx`, fazendo com que ela não seja mais chamada caso o contexto seja cancelado. Ela irá retornar `true` .
 
-[Exemplo completo no Go Playground](https://go.dev/play/p/Xc_49SbTBnM)
+{{< btn url="https://go.dev/play/p/Xc_49SbTBnM" title="Exemplo completo no Go Playground" icon="ph-fill ph-play" >}}
 
 ```go
 package main
@@ -684,6 +726,9 @@ callback: contexto cancelado!
 
 Estamos chegando ao final e não poderia deixar aqui algumas sugestões de material para você consolidar e até se aprofundar sobre concorrência, contextos e _goroutines_. Todos eles estão em inglês, mas você pode recorrer ao Google Tradutor ou alguma IA.
 
+- [A Tour of Go: Concurrency](https://go.dev/tour/concurrency/1) é um tour
+interativo sobre as principais features do Go, esse link leva direto para a
+seção sobre concorrência.
 - [Go Concurrency Patterns: Pipelines and Cancelation](https://go.dev/blog/pipelines) explica o padrão de cancelamento de tarefas utilizando canais.
 - [Go Concurrency Patterns: Context](https://go.dev/blog/context) introduz as funcionalidades do pacote `context`.
 - [Context and Struct](https://go.dev/blog/context-and-structs) esclarece porque não é uma boa ideia passar contextos dentro de uma `struct`.

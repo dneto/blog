@@ -1,7 +1,7 @@
 {{ $icons := dict
 "caution" "ph ph-warning-octagon"
 "important" ":information_source:"
-"note" "ph ph-info"
+"note" "ph ph-note-pencil"
 "tip" "ph ph-lightbulb"
 "warning" "ph-fill ph-warning"
 "quote" "ph-fill ph-quotes"
@@ -18,18 +18,21 @@
 "info" "blue"
 "analogy" "maroon"
 "caution" "red"
+"note" "yellow"
 -}}
 
 {{ if eq .Type "alert" }}
-<div class="alert-container alert-{{ or (index $colors .AlertType) "default" }}">
+<div class="alert-container alert-{{ or (index $colors .AlertType) " default" }}">
     <blockquote class="alert">
         <div class="alert-heading">
             <i class="{{index $icons .AlertType}} alert-icon"></i>
-            {{ with .AlertTitle }}
-            {{ . }}
-            {{ else }}
-            {{ or (lang.Translate .AlertType | title) }}
-            {{ end }}
+            <span>
+                {{ with .AlertTitle }}
+                {{ . }}
+                {{ else }}
+                {{ or (lang.Translate .AlertType | title) }}
+                {{ end }}
+            </span>
         </div>
         {{ .Text }}
     </blockquote>
