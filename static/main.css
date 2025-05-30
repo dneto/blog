@@ -1,8 +1,37 @@
-@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap");
-
 @font-face {
   font-family: "Commit Mono";
-  src: url("fonts/CommitMono\ VariableFont.woff2") format("woff");
+  src: url("fonts/CommitMono-VariableFont.woff2") format("woff2-variations");
+  font-style: normal;
+  font-weight: 100 900;
+}
+
+
+@font-face {
+  font-family: "Rubik";
+  src: url("fonts/Rubik-VariableFont_wght.ttf") format("woff2-variations");
+  font-style: normal;
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: "Rubik";
+  src: url("fonts/Rubik-Italic-VariableFont_wght.ttf") format("woff2-variations");
+  font-style: italic; /* Define italic style */
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("fonts/SourceSans3-VariableFont_wght.ttf") format("woff2-variations");
+  font-style: normal;
+  font-weight: 100 900;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("fonts/SourceSans3-Italic-VariableFont_wght.ttf") format("woff2-variations");
+  font-style: italic; /* Define italic style */
+  font-weight: 100 900;
 }
 
 :root {
@@ -783,8 +812,9 @@ div#posts {
   a {
     text-decoration: none;
     color: var(--text-color);
-    &:after{
-      content:'';
+
+    &:after {
+      content: '';
     }
   }
 }

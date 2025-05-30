@@ -154,7 +154,7 @@ abaixo, esses exemplos também contam com um link para execução no [Go Playgro
 
 ### Estrutura dos exemplos
 
-Para alguns dos exemplos seguir, decidi seguir a _vibe_ de restaurante e criei
+Para alguns dos exemplos a seguir, decidi seguir a _vibe_ de restaurante e criei
 duas `structs`.
 
 A `restaurant` representando o próprio restaurante, com o metodo `order`
@@ -554,7 +554,7 @@ if ctx.Err() != nil {
 
 A partir do [Go 1.21](https://tip.golang.org/doc/go1.21#contextpkgcontext)
 existe a opção de associar um `error` como causa do cancelamento de um contexto
-e que pode der obtido utilizando a [função `context.Cause`](https://pkg.go.dev/context#Cause).
+e que pode ser obtido utilizando a [função `context.Cause`](https://pkg.go.dev/context#Cause).
 
 Caso o contexto tenha sido cancelado e exista uma causa _não-nula_, o valor retornado será o erro enviado como causa no momento do cancelamento. Já, se não existir uma causa específica, o valor será o mesmo da chamada `ctx.Err()`, que vimos anteriormente.
 
