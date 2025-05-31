@@ -6,17 +6,32 @@
 <meta property="og:url" content="{{ .Permalink }}" />
 {{- if .IsPage -}}
 {{ $base := resources.Get "images/og.png" }}
-{{ $boldFont := resources.Get "fonts/Rubik-Black.ttf"}}
-{{ $regularFont := resources.Get "fonts/Rubik-Regular.ttf"}}
+{{ $boldFont := resources.Get "fonts/Rubik-Black.ttf" }}
+{{ $regularFont := resources.Get "fonts/Rubik-Regular.ttf" }}
+{{ $title := .Title }}
+{{ $maxCharsPerLine := 12 }} {{/* ajuste esse valor com testes! */}}
+
+{{ $titleLen := len $title }}
+{{ $lineCount := div (add $titleLen (sub $maxCharsPerLine 1)) $maxCharsPerLine }}
+{{ $maxCharsPerLine := 10 }}
+{{ $titleLines := (div (len .Title) $maxCharsPerLine | add 1) }}
+{{ $fontSize := 110 }}
+{{ $lineSpacing := 1.5 }}
+{{ $titleBlockHeight := mul $fontSize $lineCount }}
+{{ $titleY := (div $base.Height 2) }}
+{{ $subtitleY := add $titleY $titleBlockHeight }}
+
 {{ $img := $base.Filter (images.Text .Title (dict
-"color" "#cba6f7"
-"size" 105
-"linespacing" 2
-"x" 500
-"aligny" "center"
-"font" $boldFont
-"y" (mul $base.Height 0.5 | int)
-))}}
+  "color" "#cba6f7"
+  "size" 120
+  "x" 480
+  "y" $titleY
+  "font" $boldFont
+  "aligny" "center"
+)) }}
+
+
+
 {{ $img = resources.Copy (path.Join .Page.RelPermalink "og.png") $img }}
 <meta property="og:image" content="{{$img.Permalink}}">
 <meta property="og:image:width" content="{{$img.Width}}" />
